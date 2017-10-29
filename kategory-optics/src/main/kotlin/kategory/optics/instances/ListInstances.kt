@@ -1,9 +1,11 @@
 package kategory.optics
 
 import kategory.ListKW
+import kategory.ListKWKind
 import kategory.NonEmptyList
 import kategory.Option
 import kategory.case
+import kategory.ev
 import kategory.k
 import kategory.none
 import kategory.some
@@ -43,12 +45,12 @@ fun <A> listToOptionNel(): Iso<List<A>, Option<NonEmptyList<A>>> = pListToOption
 /**
  * [PIso] that defines the equality between a [List] and a [ListKW]
  */
-fun <A, B> pListToListKW(): PIso<List<A>, List<B>, ListKW<A>, ListKW<B>> = PIso(
+fun <A, B> pListToListKW(): PIso<List<A>, List<B>, ListKWKind<A>, ListKWKind<B>> = PIso(
         get = { it.k() },
-        reverseGet = { it.list }
+        reverseGet = { it.ev().list }
 )
 
 /**
  * [Iso] that defines the equality between a [List] and a [ListKW]
  */
-fun <A> listToListKW(): Iso<List<A>, ListKW<A>> = pListToListKW()
+fun <A> listToListKW(): Iso<List<A>, ListKWKind<A>> = pListToListKW()

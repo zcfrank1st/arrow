@@ -1,5 +1,7 @@
 package kategory
 
+//typealias State<S, A> = StateT<IdHK, S, A>
+
 object State {
     operator fun <S, A> invoke(MF: Monad<IdHK> = Id.monad(), run: (S) -> Tuple2<S, A>): StateT<IdHK, S, A> = StateT(Id(run.andThen { Id(it) }))
 }

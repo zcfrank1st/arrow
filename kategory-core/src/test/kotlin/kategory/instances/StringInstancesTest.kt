@@ -13,6 +13,7 @@ class StringInstancesTest : UnitSpec() {
             semigroup<String>() shouldNotBe null
             monoid<String>() shouldNotBe null
             eq<String>() shouldNotBe null
+            eq<Char>() shouldNotBe null
         }
 
         testLaws(EqLaws.laws { it.toString() })

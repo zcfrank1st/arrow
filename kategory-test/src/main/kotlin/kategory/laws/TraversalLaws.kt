@@ -7,7 +7,7 @@ import kategory.optics.modify
 
 object TraversalLaws {
 
-    inline fun <reified A, reified B : Any> laws(traversal: Traversal<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A>, EQB: Eq<B>) = listOf(
+    inline fun <reified A, reified B : Any> laws(traversal: Traversal<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A> = eq(), EQB: Eq<B> = eq) = listOf(
             Law("Traversal law: head option", { headOption(traversal, aGen, EQB) }),
             Law("Traversal law: modify get all", { modifyGetAll(traversal, aGen, funcGen, EQB) }),
             Law("Traversal law: set is idempotent", { setIdempotent(traversal, aGen, bGen, EQA) }),

@@ -1,6 +1,18 @@
 package kategory
 
 @instance(Tuple2::class)
+interface Tuple2OrderInstance<A, B> : Order<Tuple2<A, B>> {
+
+    fun OA(): Order<A>
+
+    fun OB(): Order<B>
+
+    override fun compare(a: Tuple2<A, B>, b: Tuple2<A, B>): Int = OA().compare(a.a, b.a).let { oa ->
+        if (oa == 0) OB().compare(a.b, b.b) else oa
+    }
+}
+
+@instance(Tuple2::class)
 interface Tuple2MonoidInstance<A, B> : Monoid<Tuple2<A, B>> {
 
     fun MA(): Monoid<A>

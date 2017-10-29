@@ -11,6 +11,13 @@ import kategory.Tuple8
 import kategory.Tuple9
 import kategory.toT
 
+fun <A, B, C, D> pPairToTuple(): PIso<Pair<A, B>, Pair<C, D>, Tuple2<A, B>, Tuple2<C, D>> = PIso(
+        get = { it.first toT it.second },
+        reverseGet = { it.a to it.b }
+)
+
+fun <A, B> pairToTuple(): Iso<Pair<A, B>, Tuple2<A, B>> = pPairToTuple()
+
 /**
  * [PLens] to focus into the first value of a [kategory.Tuple2]
  */

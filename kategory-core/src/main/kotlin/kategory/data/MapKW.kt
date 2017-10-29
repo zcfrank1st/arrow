@@ -47,6 +47,20 @@ data class MapKW<K, out A>(val map: Map<K, A>) : MapKWKind<K, A>, Map<K, A> by m
     companion object
 }
 
+operator fun <K, A> MapKW<K, A>.plus(other: MapKW<K, A>): MapKW<K, A> =
+        (map + other.map).k()
+
+operator fun <K, A> MapKW<K, A>.plus(other: Map<K, A>): MapKW<K, A> =
+        (map + other).k()
+
+operator fun <K, A> Map<K, A>.plus(other: Tuple2<K, A>): MapKW<K, A> =
+        (this + (other.a to other.b)).k()
+
+operator fun <K, A> MapKW<K, A>.plus(other: Tuple2<K, A>): MapKW<K, A> = map + other
+
+operator fun <K, A> MapKW<K, A>.plus(other: Pair<K, A>): MapKW<K, A> =
+        (map + other).k()
+
 fun <K, A> Map<K, A>.k(): MapKW<K, A> = MapKW(this)
 
 fun <K, A> Option<Tuple2<K, A>>.k(): MapKW<K, A> =

@@ -143,3 +143,12 @@ fun <K, V> genMap(genK: Gen<K>, genV: Gen<V>): Gen<Map<K, V>> =
 
 fun <K, V> genMapKW(genK: Gen<K>, genV: Gen<V>): Gen<MapKW<K, V>> =
         Gen.create { Gen.list(genK).generate().map { it to genV.generate() }.toMap().k() }
+
+fun <A> genListKW(genA: Gen<A>): Gen<ListKW<A>> =
+        Gen.create { Gen.list(genA).generate().k() }
+
+fun <A> genSequenceKW(genA: Gen<A>): Gen<SequenceKW<A>> =
+        Gen.create { Gen.list(genA).generate().asSequence().k() }
+
+fun genChars(): Gen<Char> =
+        Gen.oneOf(('A'..'Z') + ('a'..'z') + ('0'..'9') + "!@#$%%^&*()_-~`,<.?/:;}{][±§".toList())

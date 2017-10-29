@@ -11,6 +11,9 @@ object StringSemigroupInstanceImplicits {
 }
 
 object StringEqInstanceImplicits {
-    @JvmStatic
-    fun instance(): StringEqInstance = StringEqInstance
+    @JvmStatic fun instance(): StringEqInstance = StringEqInstance
+}
+
+object CharacterEqInstanceImplicits {
+    @JvmStatic fun instance(): CharEqInstance = CharEqInstance
 }

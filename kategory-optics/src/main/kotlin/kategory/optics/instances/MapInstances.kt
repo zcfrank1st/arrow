@@ -20,6 +20,16 @@ fun <K, A> mapToMapKW(): Iso<Map<K, A>, MapKW<K, A>> = pMapToMapKW()
  * [Iso] that defines the equality between a Unit value [Map] and a [Set] with its keys
  */
 fun <K> mapToSet(): Iso<Map<K, Unit>, Set<K>> = Iso(
-        get= { it.keys },
+        get = { it.keys },
         reverseGet = { keys -> keys.map { it to Unit }.toMap() }
+)
+
+fun <K, A> mapToList(): Iso<Map<K, A>, List<Pair<K, A>>> = Iso(
+        get = { it.toList() },
+        reverseGet = { it.toMap() }
+)
+
+fun <K, A> mapkwToList(): Iso<MapKW<K, A>, List<Pair<K, A>>> = Iso(
+        get = { it.toList() },
+        reverseGet = { it.toMap().k() }
 )
