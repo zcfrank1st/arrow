@@ -6,6 +6,7 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldNotBe
 import kategory.Validated.Invalid
 import kategory.Validated.Valid
+import kategory.laws.EqLaws
 import org.junit.runner.RunWith
 
 @RunWith(KTestJUnitRunner::class)
@@ -19,14 +20,19 @@ class ValidatedTest : UnitSpec() {
             foldable<ValidatedKindPartial<String>>() shouldNotBe null
             traverse<ValidatedKindPartial<String>>() shouldNotBe null
             applicativeError<ValidatedKindPartial<String>, String>() shouldNotBe null
+            eq<Validated<String, Int>>() shouldNotBe null
         }
 
-        testLaws(ApplicativeLaws.laws(Validated.applicative(StringMonoidInstance), Eq.any()))
-        testLaws(TraverseLaws.laws(Validated.traverse(), Validated.applicative(StringMonoidInstance), ::Valid, Eq.any()))
-        testLaws(SemigroupKLaws.laws(
+        testLaws(
+            EqLaws.laws { it.valid<String, Int>() },
+            ApplicativeLaws.laws(Validated.applicative(StringMonoidInstance), Eq.any()),
+            TraverseLaws.laws(Validated.traverse(), Validated.applicative(StringMonoidInstance), ::Valid, Eq.any()),
+            SemigroupKLaws.laws(
                 Validated.semigroupK(IntMonoid),
                 Validated.applicative(IntMonoid),
-                Eq.any()))
+                Eq.any())
+        )
+
 
         "fold should call function on Invalid" {
             val exception = Exception("My Exception")
@@ -92,6 +98,11 @@ class ValidatedTest : UnitSpec() {
         "toEither should return Either.Right(value) if is Valid or Either.Left(error) in otherwise" {
             Valid(10).toEither() shouldBe Either.Right(10)
             Invalid(13).toEither() shouldBe Either.Left(13)
+        }
+
+        "toIor should return Ior.Right(value) if is Valid or Ior.Left(error) in otherwise" {
+            Valid(10).toIor() shouldBe Ior.Right(10)
+            Invalid(13).toIor() shouldBe Ior.Left(13)
         }
 
         "toOption should return Option.Some(value) if is Valid or Option.None in otherwise" {
@@ -161,7 +172,7 @@ class ValidatedTest : UnitSpec() {
         }
 
         "Cartesian builder should build products over homogeneous Validated" {
-            Validated.applicative(StringMonoidInstance).map(
+            Validated.applicative<String>().map(
                     Valid("11th"),
                     Valid("Doctor"),
                     Valid("Who"),
@@ -169,7 +180,7 @@ class ValidatedTest : UnitSpec() {
         }
 
         "Cartesian builder should build products over heterogeneous Validated" {
-            Validated.applicative(StringMonoidInstance).map(
+            Validated.applicative<String>().map(
                     Valid(13),
                     Valid("Doctor"),
                     Valid(false),
@@ -177,11 +188,49 @@ class ValidatedTest : UnitSpec() {
         }
 
         "Cartesian builder should build products over Invalid Validated" {
-            Validated.applicative(StringMonoidInstance).map(
+            Validated.applicative<String>().map(
                     Invalid("fail1"),
                     Invalid("fail2"),
                     Valid("Who"),
                     { "success!" }) shouldBe Invalid("fail1fail2")
+        }
+
+        "CombineK should combine Valid Validated" {
+            val valid = Valid("Who")
+
+            Validated.semigroupK<String>().combineK(valid, valid) shouldBe(Valid("Who"))
+        }
+
+        "CombineK should combine Valid and Invalid Validated" {
+            val valid = Valid("Who")
+            val invalid = Invalid("Nope")
+
+            Validated.semigroupK<String>().combineK(valid, invalid) shouldBe(Valid("Who"))
+        }
+
+        "CombineK should combine Invalid Validated" {
+            val invalid = Invalid("Nope")
+
+            Validated.semigroupK<String>().combineK(invalid, invalid) shouldBe(Invalid("NopeNope"))
+        }
+
+        "Combine should combine Valid Validated" {
+            val valid: Validated<String, String> = Valid("Who")
+
+            valid.combine(valid) shouldBe(Valid("WhoWho"))
+        }
+
+        "Combine should combine Valid and Invalid Validated" {
+            val valid = Valid("Who")
+            val invalid = Invalid("Nope")
+
+            valid.combine(invalid) shouldBe(Invalid("Nope"))
+        }
+
+        "Combine should combine Invalid Validated" {
+            val invalid: Validated<String, String> = Invalid("Nope")
+
+            invalid.combine(invalid) shouldBe(Invalid("NopeNope"))
         }
     }
 }

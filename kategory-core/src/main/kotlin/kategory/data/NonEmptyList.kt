@@ -1,5 +1,7 @@
 package kategory
 
+typealias Nel<A> = NonEmptyList<A>
+
 /**
  * A List that can not be empty
  */
@@ -23,9 +25,9 @@ class NonEmptyList<out A> private constructor(
 
     val size: Int = all.size
 
-    fun contains(element: @UnsafeVariance A): Boolean = (head == element).or(tail.contains(element))
+    fun contains(element: @UnsafeVariance A): Boolean = (head == element) || element in tail
 
-    fun containsAll(elements: Collection<@UnsafeVariance A>): Boolean = elements.all { contains(it) }
+    fun containsAll(elements: Collection<@UnsafeVariance A>): Boolean = elements.all(this::contains)
 
     fun isEmpty(): Boolean = false
 
@@ -79,6 +81,8 @@ class NonEmptyList<out A> private constructor(
 
         return true
     }
+
+    fun show(): String = all.joinToString()
 
     override fun hashCode(): Int = all.hashCode()
 

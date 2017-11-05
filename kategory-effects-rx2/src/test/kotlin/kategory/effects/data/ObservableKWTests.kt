@@ -43,11 +43,18 @@ class ObservableKWTest : UnitSpec() {
             monad<ObservableKWHK>() shouldNotBe null
             monadError<ObservableKWHK, Unit>() shouldNotBe null
             asyncContext<ObservableKWHK>() shouldNotBe null
+            foldable<ObservableKWHK>() shouldNotBe null
+            traverse<ObservableKWHK>() shouldNotBe null
         }
 
-        testLaws(AsyncLaws.laws(ObservableKW.asyncContext(), ObservableKW.monadErrorFlat(), EQ(), EQ()))
-        testLaws(AsyncLaws.laws(ObservableKW.asyncContext(), ObservableKW.monadErrorConcat(), EQ(), EQ()))
-        testLaws(AsyncLaws.laws(ObservableKW.asyncContext(), ObservableKW.monadErrorSwitch(), EQ(), EQ()))
+        testLaws(
+            AsyncLaws.laws(ObservableKW.asyncContext(), ObservableKW.monadErrorFlat(), EQ(), EQ()),
+            AsyncLaws.laws(ObservableKW.asyncContext(), ObservableKW.monadErrorConcat(), EQ(), EQ()),
+            AsyncLaws.laws(ObservableKW.asyncContext(), ObservableKW.monadErrorSwitch(), EQ(), EQ()),
+
+            FoldableLaws.laws(ObservableKW.foldable(), { ObservableKW.pure(it) }, Eq.any()),
+            TraverseLaws.laws(ObservableKW.traverse(), ObservableKW.functor(), { ObservableKW.pure(it)  }, EQ())
+        )
 
         "Multi-thread Observables finish correctly" {
             val value: Observable<Long> = ObservableKW.monadErrorFlat().bindingE {

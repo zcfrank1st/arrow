@@ -10,9 +10,11 @@ import kategory.Try
 import kategory.Tuple2
 import kategory.UnitSpec
 import kategory.applicative
+import kategory.functor
 import kategory.genFunctionAToB
 import kategory.left
 import kategory.right
+import kategory.some
 import kategory.toT
 import org.junit.runner.RunWith
 
@@ -21,24 +23,35 @@ class LensTest : UnitSpec() {
 
     init {
         testLaws(
-                LensLaws.laws(
-                        lens = tokenLens,
-                        aGen = TokenGen,
-                        bGen = Gen.string(),
-                        funcGen = genFunctionAToB(Gen.string()),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = Option.applicative()
-                ) +  LensLaws.laws(
-                        lens = Lens.id(),
-                        aGen = Gen.int(),
-                        bGen = Gen.int(),
-                        funcGen = genFunctionAToB(Gen.int()),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = Try.applicative()
-                )
+            LensLaws.laws(
+                lens = tokenLens,
+                aGen = TokenGen,
+                bGen = Gen.string(),
+                funcGen = genFunctionAToB(Gen.string()),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                FA = Option.applicative()),
+            LensLaws.laws(
+                lens = Lens.id(),
+                aGen = Gen.int(),
+                bGen = Gen.int(),
+                funcGen = genFunctionAToB(Gen.int()),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                FA = Try.applicative())
         )
+
+        "Lifting a function should yield the same result as not yielding" {
+            forAll(TokenGen, Gen.string(), { token, value ->
+                tokenLens.set(token, value) == tokenLens.lift { value }(token)
+            })
+        }
+
+        "Lifting a function as a functor should yield the same result as not yielding" {
+            forAll(TokenGen, Gen.string(), { token, value ->
+                tokenLens.modifyF(Option.functor(), token) { value.some() } == tokenLens.liftF { value.some() }(token)
+            })
+        }
 
         "Finding a target using a predicate within a Lens should be wrapped in the correct option result" {
             forAll({ predicate: Boolean ->
@@ -54,7 +67,7 @@ class LensTest : UnitSpec() {
 
         "Joining two lenses together with same target should yield same result" {
             val userTokenStringLens = userLens compose tokenLens
-            val joinedLens = tokenLens.choice(userTokenStringLens)
+            val joinedLens = tokenLens choice userTokenStringLens
 
             forAll({ tokenValue: String ->
                 val token = Token(tokenValue)
@@ -64,7 +77,7 @@ class LensTest : UnitSpec() {
         }
 
         "Pairing two disjoint lenses should yield a pair of their results" {
-            val spiltLens: Lens<Tuple2<Token, User>, Tuple2<String, Token>> = tokenLens.split(userLens)
+            val spiltLens: Lens<Tuple2<Token, User>, Tuple2<String, Token>> = tokenLens split userLens
             forAll(TokenGen, UserGen, { token: Token, user: User ->
                 spiltLens.get(token toT user) == token.value toT user.token
             })

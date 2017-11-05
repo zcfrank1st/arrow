@@ -12,7 +12,7 @@ import kategory.functor
 typealias Setter<S, A> = PSetter<S, S, A, A>
 
 /**
- * A [Setter] is an optic that allows you to see into a structure and set or modify its target.
+ * A [Setter] is an optic that allows to see into a structure and set or modify its focus.
  *
  * A (polymorphic) [PSetter] is useful when setting or modifying a value for a constructed type
  * i.e. PSetter<List<Int>, List<String>, Int, String>
@@ -26,17 +26,17 @@ typealias Setter<S, A> = PSetter<S, S, A, A>
  * @param A the target of a [PSetter]
  * @param B the modified target of a [PSetter]
  */
-abstract class PSetter<S, T, A, B> {
+interface PSetter<S, T, A, B> {
 
     /**
      * Modify polymorphically the target of a [PSetter] with a function
      */
-    abstract fun modify(s: S, f: (A) -> B): T
+    fun modify(s: S, f: (A) -> B): T
 
     /**
      * Set polymorphically the target of a [PSetter] with a value
      */
-    abstract fun set(s: S, b: B): T
+    fun set(s: S, b: B): T
 
     companion object {
 
@@ -51,7 +51,7 @@ abstract class PSetter<S, T, A, B> {
          * Invoke operator overload to create a [PSetter] of type `S` with target `A`.
          * Can also be used to construct [Setter]
          */
-        operator fun <S, T, A, B> invoke(modify: ((A) -> B) -> (S) -> T): PSetter<S, T, A, B> = object : PSetter<S, T, A, B>() {
+        operator fun <S, T, A, B> invoke(modify: ((A) -> B) -> (S) -> T): PSetter<S, T, A, B> = object : PSetter<S, T, A, B> {
             override fun modify(s: S, f: (A) -> B): T = modify(f)(s)
 
             override fun set(s: S, b: B): T = modify(s) { b }
@@ -68,7 +68,7 @@ abstract class PSetter<S, T, A, B> {
     /**
      * Join two [PSetter] with the same target
      */
-    fun <U, V> choice(other: PSetter<U, V, A, B>): PSetter<Either<S, U>, Either<T, V>, A, B> = PSetter { f ->
+    infix fun <U, V> choice(other: PSetter<U, V, A, B>): PSetter<Either<S, U>, Either<T, V>, A, B> = PSetter { f ->
         { su -> su.bimap({ s -> modify(s, f) }, { u -> other.modify(u, f) }) }
     }
 
@@ -100,6 +100,11 @@ abstract class PSetter<S, T, A, B> {
     infix fun <C, D> compose(other: PIso<A, B, C, D>): PSetter<S, T, C, D> = compose(other.asSetter())
 
     /**
+     * Compose a [PSetter] with a [PTraversal]
+     */
+    infix fun <C, D> compose(other: PTraversal<A, B, C, D>): PSetter<S, T, C, D> = compose(other.asSetter())
+
+    /**
      * Plus operator overload to compose optionals
      */
     operator fun <C, D> plus(o: PSetter<A, B, C, D>): PSetter<S, T, C, D> = compose(o)
@@ -112,4 +117,13 @@ abstract class PSetter<S, T, A, B> {
 
     operator fun <C, D> plus(o: PIso<A, B, C, D>): PSetter<S, T, C, D> = compose(o)
 
+    operator fun <C, D> plus(o: PTraversal<A, B, C, D>): PSetter<S, T, C, D> = compose(o)
+
+}
+
+/**
+ * Lift a function [f]: `(A) -> B to the context of `S`: `(S) -> T`
+ */
+inline fun <S, T, A, B> PSetter<S, T, A, B>.lift(crossinline f: (A) -> B): (S) -> T = { s ->
+    modify(s) { f(it) }
 }

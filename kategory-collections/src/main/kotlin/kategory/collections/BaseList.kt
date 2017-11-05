@@ -41,18 +41,15 @@ interface BaseList<E> : List<E> {
         return false
     }
 
-    override fun containsAll(elements: Collection<E>): Boolean {
-        // Faster to create a HashSet and call containsAll on that because it's
-        // O(this size PLUS that size), whereas looping through both would be
-        // O(this size TIMES that size).
-        return when {
-            elements.isEmpty() -> true
-            isEmpty() -> false
-            else
-                //                (ts instanceof Set) ? ((Set) ts).containsAll(c) :
-                //                (ts instanceof Map) ? ((Map) ts).entrySet().containsAll(c) :
-            -> HashSet(this).containsAll(elements)
-        }
+    // Faster to create a HashSet and call containsAll on that because it's
+    // O(this size PLUS that size), whereas looping through both would be
+    // O(this size TIMES that size).
+    override fun containsAll(elements: Collection<E>): Boolean = when {
+        elements.isEmpty() -> true
+        isEmpty() -> false
+        // (ts instanceof Set) ? ((Set) ts).containsAll(c) :
+        // (ts instanceof Map) ? ((Map) ts).entrySet().containsAll(c) :
+        else -> HashSet(this).containsAll(elements)
     }
 
     override fun indexOf(element: E): Int {
@@ -101,9 +98,7 @@ interface BaseList<E> : List<E> {
 //    fun reverse(): BaseList<E>
 
     /** {@inheritDoc}  */
-    override fun listIterator(): ListIterator<E> {
-        return listIterator(0)
-    }
+    override fun listIterator(): ListIterator<E> = listIterator(0)
 
     /** {@inheritDoc}  Subclasses should override this when they can do so more efficiently.  */
     override fun listIterator(index: Int): ListIterator<E> {
@@ -117,9 +112,7 @@ interface BaseList<E> : List<E> {
     class UnmodListIteratorImpl<T>(private val list: List<T>, private var idx: Int) : ListIterator<T> {
         private val sz = list.size
 
-        override operator fun hasNext(): Boolean {
-            return idx < sz
-        }
+        override operator fun hasNext(): Boolean = idx < sz
 
         override operator fun next(): T {
             // I think this temporary variable i gets compiled to a register access
@@ -138,9 +131,7 @@ interface BaseList<E> : List<E> {
             return list[i]
         }
 
-        override fun hasPrevious(): Boolean {
-            return idx > 0
-        }
+        override fun hasPrevious(): Boolean = idx > 0
 
         override fun previous(): T {
             // I think this temporary variable i gets compiled to a register access
@@ -157,13 +148,9 @@ interface BaseList<E> : List<E> {
             return list[i]
         }
 
-        override fun nextIndex(): Int {
-            return idx
-        }
+        override fun nextIndex(): Int = idx
 
-        override fun previousIndex(): Int {
-            return idx - 1
-        }
+        override fun previousIndex(): Int = idx - 1
 
     }
 

@@ -1,5 +1,6 @@
 package kategory
 
+import java.lang.IllegalArgumentException
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.TypeVariable
@@ -22,6 +23,15 @@ class InstanceParametrizedType(val raw: Type, val typeArgs: List<Type>) : Parame
 
     fun typeArgsAreParameterized(): Boolean = typeArgs.isNotEmpty() && typeArgs[0] is ParameterizedType
 
+    fun typeArgsIsHKRepresented(): Boolean =
+            if (typeArgsAreParameterized()) {
+                val firstTypeArg = typeArgs[0]
+                when (firstTypeArg) {
+                    is ParameterizedType -> firstTypeArg.rawType == HK::class.java
+                    else -> false
+                }
+            } else false
+
     override fun getRawType(): Type = raw
 
     override fun getOwnerType(): Type? = null
@@ -33,18 +43,17 @@ class InstanceParametrizedType(val raw: Type, val typeArgs: List<Type>) : Parame
     override fun equals(other: Any?): Boolean {
         if (other is ParameterizedType) {
             // Check that information is equivalent
-            val that = other
 
-            if (this === that)
+            if (this === other)
                 return true
 
-            val thatOwner = that.ownerType
-            val thatRawType = that.rawType
+            val thatOwner = other.ownerType
+            val thatRawType = other.rawType
 
             return ownerType == thatOwner &&
                     rawType == thatRawType &&
                     Arrays.equals(actualTypeArguments, // avoid clone
-                            that.actualTypeArguments)
+                            other.actualTypeArguments)
         } else {
             return false
         }
@@ -54,7 +63,7 @@ class InstanceParametrizedType(val raw: Type, val typeArgs: List<Type>) : Parame
             hashCode(ownerType) xor
             hashCode(rawType)
 
-    fun hashCode(o: Any?): Int = o?.hashCode() ?: 0
+    private fun hashCode(o: Any?): Int = o?.hashCode() ?: 0
 
 }
 
@@ -112,7 +121,7 @@ fun <T : Typeclass> instance(t: InstanceParametrizedType): T =
         if (GlobalInstances.containsKey(t)) {
             GlobalInstances.getValue(t) as T
         } else {
-            val value = if (t.typeArgsAreParameterized()) {
+            val value = if (t.typeArgsAreParameterized() && t.typeArgsIsHKRepresented()) {
                 parametricInstanceFromImplicitObject(t)
             } else {
                 instanceFromImplicitObject(t)
@@ -153,24 +162,29 @@ private fun parametricInstanceFromImplicitObject(t: InstanceParametrizedType): A
 
 private fun instanceFromImplicitObject(t: InstanceParametrizedType): Any? {
     val of = t.raw as Class<*>
-    val on = t.typeArgs[0] as Class<*>
+    val firstTypeArg = t.typeArgs[0]
+    val on = when (firstTypeArg) {
+        is Class<*> -> firstTypeArg
+        is ParameterizedType -> firstTypeArg.rawType as Class<*>
+        else -> throw IllegalArgumentException("$firstTypeArg not a Class or ParameterizedType")
+    }
     val targetPackage = on.name.substringBeforeLast(".")
     val derivationPackage = if (targetPackage.startsWith("java.")) {
         targetPackage.replace(".", "_")
     } else {
         targetPackage
     }
-    val providerQualifiedName: String = "$derivationPackage.${on.simpleName.replaceFirst("HK", "")}${of.simpleName}InstanceImplicits"
+    val providerQualifiedName = "$derivationPackage.${on.simpleName.replaceFirst("HK", "")}${of.simpleName}InstanceImplicits"
     val globalInstanceProvider = Class.forName(providerQualifiedName)
     val allCompanionFunctions = globalInstanceProvider.methods
     val factoryFunction = allCompanionFunctions.find { it.name == "instance" }
     return if (factoryFunction != null) {
-        val values: List<Any> = factoryFunction.parameters.mapIndexedNotNull { n, p ->
-            if (Typeclass::class.java.isAssignableFrom(p.type)) {
-                val classifier = p.parameterizedType as ParameterizedType
+        val values: List<Any> = factoryFunction.parameterTypes.mapIndexedNotNull { n, p ->
+            if (Typeclass::class.java.isAssignableFrom(p)) {
+                val classifier = InstanceParametrizedType(p, p.typeParameters.toList())
                 val vType = reifyRawParameterizedType(t, classifier, n)
                 val value = instanceFromImplicitObject(vType)
-                if (value != null) registerInstance(t, value)
+                if (value != null) registerInstance(vType, value)
                 value
             } else null
         }
@@ -180,8 +194,11 @@ private fun instanceFromImplicitObject(t: InstanceParametrizedType): Any? {
 }
 
 private fun reifyRawParameterizedType(carrier: InstanceParametrizedType, classifier: ParameterizedType, index: Int): InstanceParametrizedType =
-        if (classifier.actualTypeArguments.any { it is TypeVariable<*> }) {
+        if (classifier.actualTypeArguments.any { it is TypeVariable<*> } && carrier.actualTypeArguments.size > index + 1) {
             InstanceParametrizedType(classifier.rawType, listOf(carrier.actualTypeArguments[index + 1]))
+        } else if (classifier.actualTypeArguments.any { it is TypeVariable<*> }) {
+            val nestedTypes = resolveNestedTypes(carrier.actualTypeArguments.toList())
+            InstanceParametrizedType(classifier.rawType, listOf(nestedTypes[index]))
         } else {
             InstanceParametrizedType(classifier, classifier.actualTypeArguments.filterNotNull())
         }

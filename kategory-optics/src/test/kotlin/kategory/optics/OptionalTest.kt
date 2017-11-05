@@ -6,8 +6,11 @@ import io.kotlintest.properties.forAll
 import kategory.Eq
 import kategory.Option
 import kategory.OptionalLaws
+import kategory.Try
 import kategory.UnitSpec
+import kategory.applicative
 import kategory.genFunctionAToB
+import kategory.genTry
 import kategory.genTuple
 import kategory.left
 import kategory.right
@@ -19,35 +22,41 @@ class OptionalTest : UnitSpec() {
     init {
 
         testLaws(
-                OptionalLaws.laws(
-                        optional = optionalHead,
-                        aGen = Gen.list(Gen.int()),
-                        bGen = Gen.int(),
-                        funcGen = genFunctionAToB(Gen.int()),
-                        EQA = Eq.any(),
-                        EQB = Eq.any()
-                ) + OptionalLaws.laws(
-                        optional = Optional.id(),
-                        aGen = Gen.int(),
-                        bGen = Gen.int(),
-                        funcGen = genFunctionAToB(Gen.int()),
-                        EQA = Eq.any(),
-                        EQB = Eq.any()
-                ) + OptionalLaws.laws(
-                        optional = optionalHead.first(),
-                        aGen = genTuple(Gen.list(Gen.int()), Gen.bool()),
-                        bGen = genTuple(Gen.int(), Gen.bool()),
-                        funcGen = genFunctionAToB(genTuple(Gen.int(), Gen.bool())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any()
-                ) + OptionalLaws.laws(
-                        optional = optionalHead.second(),
-                        aGen = genTuple(Gen.bool(), Gen.list(Gen.int())),
-                        bGen = genTuple(Gen.bool(), Gen.int()),
-                        funcGen = genFunctionAToB(genTuple(Gen.bool(), Gen.int())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any()
-                )
+            OptionalLaws.laws(
+                optional = optionalHead,
+                aGen = Gen.list(Gen.int()),
+                bGen = Gen.int(),
+                funcGen = genFunctionAToB(Gen.int()),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            OptionalLaws.laws(
+                optional = Optional.id(),
+                aGen = Gen.int(),
+                bGen = Gen.int(),
+                funcGen = genFunctionAToB(Gen.int()),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            OptionalLaws.laws(
+                optional = optionalHead.first(),
+                aGen = genTuple(Gen.list(Gen.int()), Gen.bool()),
+                bGen = genTuple(Gen.int(), Gen.bool()),
+                funcGen = genFunctionAToB(genTuple(Gen.int(), Gen.bool())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            OptionalLaws.laws(
+                optional = optionalHead.second(),
+                aGen = genTuple(Gen.bool(), Gen.list(Gen.int())),
+                bGen = genTuple(Gen.bool(), Gen.int()),
+                funcGen = genFunctionAToB(genTuple(Gen.bool(), Gen.int())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any())
         )
 
         "void should always " {
@@ -65,6 +74,20 @@ class OptionalTest : UnitSpec() {
         "Checking if there is no target" {
             forAll(Gen.list(Gen.int()), { list ->
                 optionalHead.nonEmpty(list) == list.isNotEmpty()
+            })
+        }
+
+        "Lift should be consistent with modify" {
+            forAll(Gen.list(Gen.int()), { list ->
+                val f = { i: Int -> i + 5 }
+                optionalHead.lift(f)(list) == optionalHead.modify(list, f)
+            })
+        }
+
+        "LiftF should be consistent with modifyF" {
+            forAll(Gen.list(Gen.int()), genTry(Gen.int()), { list, tryInt ->
+                val f = { i: Int -> tryInt }
+                optionalHead.liftF(f, Try.applicative())(list) == optionalHead.modifyF(list, f, Try.applicative())
             })
         }
 

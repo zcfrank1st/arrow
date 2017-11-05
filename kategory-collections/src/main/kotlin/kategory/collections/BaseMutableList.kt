@@ -1,6 +1,6 @@
 package kategory.collections
 
-interface BaseMutableList<E>: BaseList<E>, MutableList<E> {
+interface BaseMutableList<E> : BaseList<E>, MutableList<E> {
 
     override fun add(element: E): Boolean {
         append(element)
@@ -11,7 +11,7 @@ interface BaseMutableList<E>: BaseList<E>, MutableList<E> {
         if (elements.isEmpty()) {
             return false
         }
-        for(elem in elements) {
+        for (elem in elements) {
             add(index, elem)
         }
         return true

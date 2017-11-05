@@ -21,56 +21,59 @@ class PrismTest : UnitSpec() {
 
     init {
         testLaws(
-                PrismLaws.laws(
-                        prism = sumPrism,
-                        aGen = AGen,
-                        bGen = Gen.string(),
-                        funcGen = genFunctionAToB(Gen.string()),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = Option.applicative()
-                ) + PrismLaws.laws(
-                        prism = sumPrism.first(),
-                        aGen = genTuple(AGen, Gen.int()),
-                        bGen = genTuple(Gen.string(), Gen.int()),
-                        funcGen = genFunctionAToB(genTuple(Gen.string(), Gen.int())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = Try.applicative()
-                ) + PrismLaws.laws(
-                        prism = sumPrism.second(),
-                        aGen = genTuple(Gen.int(), AGen),
-                        bGen = genTuple(Gen.int(), Gen.string()),
-                        funcGen = genFunctionAToB(genTuple(Gen.int(), Gen.string())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = Option.applicative()
-                ) + PrismLaws.laws(
-                        prism = sumPrism.right<SumType, SumType, String, String, Int>(),
-                        aGen = genEither(Gen.int(), AGen),
-                        bGen = genEither(Gen.int(), Gen.string()),
-                        funcGen = genFunctionAToB(genEither(Gen.int(), Gen.string())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = Try.applicative()
-                ) + PrismLaws.laws(
-                        prism = sumPrism.left<SumType, SumType, String, String, Int>(),
-                        aGen = genEither(AGen, Gen.int()),
-                        bGen = genEither(Gen.string(), Gen.int()),
-                        funcGen = genFunctionAToB(genEither(Gen.string(), Gen.int())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = NonEmptyList.applicative()
-                ) + PrismLaws.laws(
-                        prism = Prism.id(),
-                        aGen = genEither(Gen.int(), Gen.int()),
-                        bGen = genEither(Gen.int(), Gen.int()),
-                        funcGen = genFunctionAToB(genEither(Gen.int(), Gen.int())),
-                        EQA = Eq.any(),
-                        EQB = Eq.any(),
-                        FA = NonEmptyList.applicative()
-                )
+            PrismLaws.laws(
+                prism = sumPrism,
+                aGen = SumGen,
+                bGen = Gen.string(),
+                funcGen = genFunctionAToB(Gen.string()),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
 
+            PrismLaws.laws(
+                prism = sumPrism.first(),
+                aGen = genTuple(SumGen, Gen.int()),
+                bGen = genTuple(Gen.string(), Gen.int()),
+                funcGen = genFunctionAToB(genTuple(Gen.string(), Gen.int())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            PrismLaws.laws(
+                prism = sumPrism.second(),
+                aGen = genTuple(Gen.int(), SumGen),
+                bGen = genTuple(Gen.int(), Gen.string()),
+                funcGen = genFunctionAToB(genTuple(Gen.int(), Gen.string())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            PrismLaws.laws(
+                prism = sumPrism.right<SumType, SumType, String, String, Int>(),
+                aGen = genEither(Gen.int(), SumGen),
+                bGen = genEither(Gen.int(), Gen.string()),
+                funcGen = genFunctionAToB(genEither(Gen.int(), Gen.string())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            PrismLaws.laws(
+                prism = sumPrism.left<SumType, SumType, String, String, Int>(),
+                aGen = genEither(SumGen, Gen.int()),
+                bGen = genEither(Gen.string(), Gen.int()),
+                funcGen = genFunctionAToB(genEither(Gen.string(), Gen.int())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any()),
+
+            PrismLaws.laws(
+                prism = Prism.id(),
+                aGen = genEither(Gen.int(), Gen.int()),
+                bGen = genEither(Gen.int(), Gen.int()),
+                funcGen = genFunctionAToB(genEither(Gen.int(), Gen.int())),
+                EQA = Eq.any(),
+                EQB = Eq.any(),
+                EQOptionB = Eq.any())
         )
 
         "Joining two prisms together with same target should yield same result" {
@@ -81,10 +84,10 @@ class PrismTest : UnitSpec() {
         }
 
         "Checking if a prism exists with a target" {
-            forAll(SumGen, Gen.bool(), { a, bool ->
+            forAll(SumGen, SumGen, Gen.bool(), { a, other, bool ->
                 Prism.only(a, object : Eq<SumType> {
                     override fun eqv(a: SumType, b: SumType): Boolean = bool
-                }).isEmpty(a) == bool
+                }).isEmpty(other) == bool
             })
         }
 

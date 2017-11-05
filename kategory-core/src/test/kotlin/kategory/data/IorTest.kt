@@ -5,6 +5,7 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldNotBe
 import io.kotlintest.properties.forAll
 import kategory.Ior.Right
+import kategory.laws.EqLaws
 import org.junit.runner.RunWith
 
 
@@ -19,12 +20,16 @@ class IorTest : UnitSpec() {
             monad<IorKindPartial<Int>>() shouldNotBe null
             foldable<IorKindPartial<Int>>() shouldNotBe null
             traverse<IorKindPartial<Int>>() shouldNotBe null
+            eq<Ior<String, Int>>() shouldNotBe null
         }
 
         val intIorMonad: Monad<IorKindPartial<Int>> = monad()
 
-        testLaws(MonadLaws.laws(intIorMonad, Eq.any()))
-        testLaws(TraverseLaws.laws(Ior.traverse(), Ior.applicative<Int>(), ::Right, Eq.any()))
+        testLaws(
+            EqLaws.laws(eq<Ior<String, Int>>(), { it.rightIor() }),
+            MonadLaws.laws(intIorMonad, Eq.any()),
+            TraverseLaws.laws(Ior.traverse(), Ior.applicative<Int>(), ::Right, Eq.any())
+        )
 
         "bimap() should allow modify both value" {
             forAll { a: Int, b: String ->
@@ -103,7 +108,17 @@ class IorTest : UnitSpec() {
             }
         }
 
-        "fromOption() should build a correct Option<Ior>" {
+        "toValidated() should convert values into a valid Validated" {
+            forAll { a: Int, b: String ->
+                {
+                    Ior.Left(a).toValidated() == Validated.Invalid(a) &&
+                            Ior.Right(b).toValidated() == Validated.Valid(b) &&
+                            Ior.Both(a, b).toValidated() == Validated.Valid(b)
+                }()
+            }
+        }
+
+        "fromOptions() should build a correct Option<Ior>" {
             forAll { a: Int, b: String ->
                 {
                     Ior.fromOptions(Option.Some(a), Option.None) == Option.Some(Ior.Left(a)) &&
