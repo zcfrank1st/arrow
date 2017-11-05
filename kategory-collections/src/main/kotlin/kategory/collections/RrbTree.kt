@@ -491,7 +491,7 @@ abstract class RrbTree<E> : BaseList<E>, Indented {
         }
 
         /** {@inheritDoc}  */
-        override fun replace(index: Int, item: E): RrbTree<E> {
+        override fun replace(index: Int, item: E): MutRrbt<E> {
             @Suppress("NAME_SHADOWING")
             var index = index
             if (index < 0 || index > size) {
