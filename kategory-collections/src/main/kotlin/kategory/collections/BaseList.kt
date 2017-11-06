@@ -109,7 +109,7 @@ interface BaseList<E> : List<E> {
         return UnmodListIteratorImpl(this, index)
     }
 
-    class UnmodListIteratorImpl<T>(private val list: List<T>, private var idx: Int) : ListIterator<T> {
+    open class UnmodListIteratorImpl<T>(private val list: List<T>, private var idx: Int) : ListIterator<T> {
         private val sz = list.size
 
         override operator fun hasNext(): Boolean = idx < sz

@@ -297,7 +297,7 @@ abstract class RrbTree<E> : BaseList<E>, Indented {
 
         /** {@inheritDoc}  */
         @Suppress("UNCHECKED_CAST")
-        override fun iterator(): MutableIterator<E> = Iter(pushFocus()) as MutableIterator<E>
+        override fun iterator(): MutableIterator<E> = MutableIter(pushFocus())
 
         /** {@inheritDoc}  */
         override fun pushFocus(): Node<E> = if (focusLength == 0)
@@ -2361,7 +2361,7 @@ involves changing more nodes than maybe necessary.
     }
 
     // Focus must be pre-pushed so we don't have to ever check the index.
-    internal inner class Iter(root: Node<E>) : Iterator<E> {
+    open internal inner class Iter(root: Node<E>) : Iterator<E> {
 
         // We want this iterator to walk the node tree.
         @Suppress("UNCHECKED_CAST")
@@ -2416,6 +2416,12 @@ involves changing more nodes than maybe necessary.
             }
             // Return the next item in the leaf array and increment index
             return leafArray[leafArrayIdx++]!!
+        }
+    }
+
+    internal inner class MutableIter(root: Node<E>) : Iter(root), MutableIterator<E> {
+        override fun remove() {
+            throw UnsupportedOperationException()
         }
     }
 

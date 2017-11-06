@@ -1,5 +1,7 @@
 package kategory.collections
 
+import java.util.NoSuchElementException
+
 interface BaseMutableList<E> : BaseList<E>, MutableList<E> {
 
     override fun add(element: E): Boolean {
@@ -27,7 +29,13 @@ interface BaseMutableList<E> : BaseList<E>, MutableList<E> {
 
     override fun listIterator(): MutableListIterator<E> = super.listIterator() as MutableListIterator<E>
 
-    override fun listIterator(index: Int): MutableListIterator<E> = super.listIterator(index) as MutableListIterator<E>
+    override fun listIterator(index: Int): MutableListIterator<E> {
+        if (index < 0 || index > size) {
+            throw IndexOutOfBoundsException("Expected an index between 0 and " + size +
+                                            " but found: " + index)
+        }
+        return ListIteratorImpl(this, index)
+    }
 
     override fun set(index: Int, element: E): E {
         val ret = get(index)
@@ -38,4 +46,20 @@ interface BaseMutableList<E> : BaseList<E>, MutableList<E> {
     override fun subList(fromIndex: Int, toIndex: Int): BaseMutableList<E> {
         throw UnsupportedOperationException()
     }
+
+    class ListIteratorImpl<T>(list: List<T>, idx: Int) :
+            BaseList.UnmodListIteratorImpl<T>(list, idx), MutableListIterator<T> {
+        override fun add(element: T) {
+            throw UnsupportedOperationException()
+        }
+
+        override fun remove() {
+            throw UnsupportedOperationException()
+        }
+
+        override fun set(element: T) {
+            throw UnsupportedOperationException()
+        }
+    }
+
 }

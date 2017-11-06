@@ -14,7 +14,6 @@ import java.util.ArrayList
 import java.util.Arrays
 
 //@RunWith(KTestJUnitRunner::class)
-@Ignore
 class RrbTreeTest { // : UnitSpec() {
     private val SEVERAL = 100 //0; //0; //SecureRandom.getInstanceStrong().nextInt(999999) + 33 ;
 
@@ -615,6 +614,7 @@ class RrbTreeTest { // : UnitSpec() {
         TestUtilities.listIteratorTest(tList, mu)
     }
 
+    @Ignore // TODO: FIX THIS!
     @Test
     fun equalsAndHashCode() {
         val control = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
@@ -766,6 +766,7 @@ class RrbTreeTest { // : UnitSpec() {
 
     }
 
+    @Ignore // TODO: FIX THIS!
     @Test
     fun joinMutableTest() {
         Assert.assertEquals(mut(1, 2, 3, 4, 5, 6), mut(1, 2, 3).join(mut(4, 5, 6)))
@@ -834,6 +835,7 @@ class RrbTreeTest { // : UnitSpec() {
     }
 
 
+    @Ignore // TODO: FIX THIS!
     @Test
     fun testWithout() {
         Assert.assertEquals(rrb(1, 2, 3, 5, 6), rrb(1, 2, 3, 4, 5, 6).without(3))
