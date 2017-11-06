@@ -220,23 +220,22 @@ abstract class RrbTree<E> : BaseList<E>, Indented {
 
         /** Returns an immutable version of this RRB Tree  */
         fun immutable(): ImRrbt<E> = ImRrbt(arrayCopy(focus, focusLength, null),
-                          focusStartIndex,
-                          root, size)
+                                            focusStartIndex,
+                                            root, size)
 
         /** {@inheritDoc}  */
         override fun indentedStr(indent: Int): String = "RrbTree(size=" + size +
-                   " fsi=" + focusStartIndex +
-                   " focus=" + arrayString(focus) + "\n" +
-                   indentSpace(indent + 8) + "root=" +
-                   root.indentedStr(indent + 13) +
-                   ")"
+                                                        " fsi=" + focusStartIndex +
+                                                        " focus=" + arrayString(focus) + "\n" +
+                                                        indentSpace(indent + 8) + "root=" +
+                                                        root.indentedStr(indent + 13) +
+                                                        ")"
 
         /** {@inheritDoc}  */
         override fun insert(idx: Int, element: E?): MutRrbt<E> {
             // If the focus is full, push it into the tree and make a new one with the new element.
             if (focusLength >= STRICT_NODE_LENGTH) {
-                root = root.pushFocus(focusStartIndex,
-                                      arrayCopy(focus, focusLength, null))
+                root = root.pushFocus(focusStartIndex, arrayCopy(focus, focusLength, null))
                 focus = singleElementArray(element)
                 focusStartIndex = idx
                 focusLength = 1
@@ -301,10 +300,9 @@ abstract class RrbTree<E> : BaseList<E>, Indented {
 
         /** {@inheritDoc}  */
         override fun pushFocus(): Node<E> = if (focusLength == 0)
-                root
-            else
-                root.pushFocus(focusStartIndex,
-                               arrayCopy(focus, focusLength, null))
+            root
+        else
+            root.pushFocus(focusStartIndex, arrayCopy(focus, focusLength, null))
 
         /** {@inheritDoc}  */
         override fun toString(): String = iterableToString("MutRrbt", this)
@@ -608,8 +606,7 @@ abstract class RrbTree<E> : BaseList<E>, Indented {
             // structure where it belongs.  Then make a new focus
             if (focus.size >= STRICT_NODE_LENGTH || focus.isNotEmpty() && focusStartIndex < size - focus.size) {
                 val newRoot = root.pushFocus(focusStartIndex, focus)
-                return ImRrbt(singleElementArray(item), size, newRoot,
-                              size + 1)
+                return ImRrbt(singleElementArray(item), size, newRoot, size + 1)
             }
             return ImRrbt(insertIntoArrayAt(item, focus, focus.size),
                           focusStartIndex, root,
@@ -954,11 +951,11 @@ abstract class RrbTree<E> : BaseList<E>, Indented {
 
         /** {@inheritDoc}  */
         override fun indentedStr(indent: Int): String = "RrbTree(size=" + size +
-                   " fsi=" + focusStartIndex +
-                   " focus=" + arrayString(focus) + "\n" +
-                   indentSpace(indent + 8) + "root=" +
-                   root.indentedStr(indent + 13) +
-                   ")"
+                                                        " fsi=" + focusStartIndex +
+                                                        " focus=" + arrayString(focus) + "\n" +
+                                                        indentSpace(indent + 8) + "root=" +
+                                                        root.indentedStr(indent + 13) +
+                                                        ")"
 
         /** {@inheritDoc}  */
         override fun toString(): String = iterableToString("ImRrbt", this)
@@ -1359,8 +1356,7 @@ involves changing more nodes than maybe necessary.
             val leftLeaf = res[0]
             val rightLeaf = res[1]
             val leftSize = leftLeaf.size()
-            return Relaxed(intArrayOf(leftSize, leftSize + rightLeaf.size()),
-                           res)
+            return Relaxed(intArrayOf(leftSize, leftSize + rightLeaf.size()), res)
         }
 
         override fun replace(idx: Int, t: T): Node<T> = Leaf(replaceInArrayAt(t, items, idx))
@@ -1423,9 +1419,11 @@ involves changing more nodes than maybe necessary.
 
         /** Adds a node as the first/leftmost or last/rightmost child  */
         override fun addEndChild(leftMost: Boolean, shorter: Node<T>): Node<T> = if (leftMost || shorter !is Strict<*>) {
-                relax().addEndChild(leftMost, shorter)
-            } else Strict(shift, size + shorter.size(),
-                          insertIntoArrayAt(shorter, nodes, nodes.size, nodeClass()))
+            relax().addEndChild(leftMost, shorter)
+        } else {
+            Strict(shift, size + shorter.size(),
+                   insertIntoArrayAt(shorter, nodes, nodes.size, nodeClass()))
+        }
 
         /** Adds kids as leftmost or rightmost of current children  */
         override fun addEndChildren(leftMost: Boolean, newKids: Array<out Node<T>>): Node<T> = relax().addEndChildren(leftMost, newKids)
@@ -1735,8 +1733,9 @@ involves changing more nodes than maybe necessary.
         override fun endChild(leftMost: Boolean): Node<T> = nodes[if (leftMost) 0 else nodes.size - 1]
 
         /** Adds a node as the first/leftmost or last/rightmost child  */
-        override fun addEndChild(leftMost: Boolean, shorter: Node<T>): Node<T> = insertInRelaxedAt(cumulativeSizes, nodes, shorter,
-                                     if (leftMost) 0 else nodes.size)
+        override fun addEndChild(leftMost: Boolean, shorter: Node<T>): Node<T> =
+                insertInRelaxedAt(cumulativeSizes, nodes, shorter,
+                                  if (leftMost) 0 else nodes.size)
 
         /** Adds kids as leftmost or rightmost of current children  */
         override fun addEndChildren(leftMost: Boolean, newKids: Array<out Node<T>>): Node<T> {
@@ -1870,9 +1869,9 @@ involves changing more nodes than maybe necessary.
          */
         // Better name might be: nextLevelIndex?  subNodeSubIndex?
         private fun subNodeAdjustedIndex(index: Int, subNodeIndex: Int): Int = if (subNodeIndex == 0)
-                index
-            else
-                index - cumulativeSizes[subNodeIndex - 1]
+            index
+        else
+            index - cumulativeSizes[subNodeIndex - 1]
 
         override fun get(i: Int): T? {
             val subNodeIndex = subNodeIndex(i)
@@ -1897,8 +1896,7 @@ involves changing more nodes than maybe necessary.
                 return true
             }
             val subNodeIndex = subNodeIndex(index)
-            return nodes[subNodeIndex].hasRelaxedCapacity(subNodeAdjustedIndex(index, subNodeIndex),
-                                                          size)
+            return nodes[subNodeIndex].hasRelaxedCapacity(subNodeAdjustedIndex(index, subNodeIndex), size)
         }
 
         private fun split(): Array<Relaxed<T>> {
@@ -2029,8 +2027,7 @@ involves changing more nodes than maybe necessary.
                 val newNode = subNode.pushFocus(subNodeAdjustedIndex, oldFocus)
                 // Make a copy of our nodesArray, replacing the old node at subNodeIndex with the
                 // new node
-                return replaceInRelaxedAt(cumulativeSizes, nodes, newNode, subNodeIndex,
-                                          oldFocus.size)
+                return replaceInRelaxedAt(cumulativeSizes, nodes, newNode, subNodeIndex, oldFocus.size)
             }
 
             // I think this is a root node thing.
@@ -2130,8 +2127,7 @@ involves changing more nodes than maybe necessary.
                 // Convert Strict to Relaxed
                 val relaxed = (subNode as Strict<T>).relax()
                 val newNode = relaxed.pushFocus(subNodeAdjustedIndex, oldFocus)
-                return replaceInRelaxedAt(cumulativeSizes, nodes, newNode, subNodeIndex,
-                                          oldFocus.size)
+                return replaceInRelaxedAt(cumulativeSizes, nodes, newNode, subNodeIndex, oldFocus.size)
             }
 
             // Here we have capacity and the full sub-node is not a leaf or strict, so we have to
@@ -2158,8 +2154,7 @@ involves changing more nodes than maybe necessary.
             // If we aren't inserting at the last item, array-copy the nodes after the insert
             // point.
             if (subNodeIndex < nodes.size) {
-                System.arraycopy(nodes, subNodeIndex + 1, newNodes, subNodeIndex + 2,
-                                 nodes.size - subNodeIndex - 1)
+                System.arraycopy(nodes, subNodeIndex + 1, newNodes, subNodeIndex + 2, nodes.size - subNodeIndex - 1)
             }
 
             val newCumSizes = IntArray(cumulativeSizes.size + 1)
@@ -2450,11 +2445,11 @@ involves changing more nodes than maybe necessary.
         }
 
         private fun <E> addAncestor(n: Node<E>): Node<E> = if (n is Leaf<E> && n.size() == STRICT_NODE_LENGTH)
-                Strict(NODE_LENGTH_POW_2, n.size(), arrayOf(n))
-            else if (n is Strict<*>)
-                Strict((n as Strict<E>).shift + NODE_LENGTH_POW_2, n.size(), arrayOf(n))
-            else
-                Relaxed(intArrayOf(n.size()), arrayOf(n))
+            Strict(NODE_LENGTH_POW_2, n.size(), arrayOf(n))
+        else if (n is Strict<*>)
+            Strict((n as Strict<E>).shift + NODE_LENGTH_POW_2, n.size(), arrayOf(n))
+        else
+            Relaxed(intArrayOf(n.size()), arrayOf(n))
 
         // ================================== Implementation Details ==================================
 

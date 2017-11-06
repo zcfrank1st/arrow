@@ -162,8 +162,7 @@ fun <A> spliceIntoArrayAt(insertedItems: Array<out A>, origItems: Array<out A>, 
     // If we aren't inserting at the last item, array-copy the items after the insert
     // point.
     if (idx < origItems.size) {
-        System.arraycopy(origItems, idx, newItems, idx + insertedItems.size,
-                         origItems.size - idx)
+        System.arraycopy(origItems, idx, newItems, idx + insertedItems.size, origItems.size - idx)
     }
     return newItems
 }

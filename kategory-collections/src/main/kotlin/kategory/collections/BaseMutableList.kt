@@ -1,7 +1,5 @@
 package kategory.collections
 
-import java.util.NoSuchElementException
-
 interface BaseMutableList<E> : BaseList<E>, MutableList<E> {
 
     override fun add(element: E): Boolean {
