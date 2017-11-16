@@ -25,15 +25,16 @@ inline fun <S, T, A, B, C> PLens<S, T, A, B>.extracts(crossinline f: (A) -> C) =
 /**
  * Modify the value viewed through the lens and returns its *new* value
  */
-fun <S, T, A, B> PLens<S, T, A, B>.mod(f: (A) -> B): IndexedStateT<IdHK, S, T, B> = IndexedStateT(Id.applicative()) { s ->
+fun <S, T, A, B> PLens<S, T, A, B>.mod(f: (A) -> B): IndexedState<S, T, B> = IndexedState { s ->
     val a = get(s)
     val b = f(a)
-    Id.pure(set(s, b) toT b)
+    set(s, b) toT b
 }
 
 /** modify the value viewed through the lens and returns its *old* value */
 //def modo(f: A => B): IndexedState[S, T, A] =toState.leftMap(lens.modify(f))
-fun <S, T, A, B> PLens<S, T, A, B>.modo(f: (A) -> B): IndexedStateT<IdHK, S, T, A> =
+fun <S, T, A, B> PLens<S, T, A, B>.modo(f: (A) -> B): IndexedState<S, T, A> = TODO()
+
 fun <S, A> Lens<S, A>.mod_(f: (A) -> A) = State<S, Unit> {
     val a = get(it)
     val b = f(a)

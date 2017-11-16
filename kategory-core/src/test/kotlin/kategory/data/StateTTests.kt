@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 @RunWith(KTestJUnitRunner::class)
 class StateTTests : UnitSpec() {
 
-    val M: StateTMonadStateInstance<TryHK, Int> = StateT.monadState<TryHK, Int>(Try.monad())
+    val M = StateT.monadState<TryHK, Int>()
 
     val EQ: Eq<StateTKind<TryHK, Int, Int>> = Eq { a, b ->
         a.runM(1) == b.runM(1)
@@ -33,13 +33,14 @@ class StateTTests : UnitSpec() {
 
         testLaws(MonadStateLaws.laws(M, EQ, EQ_UNIT))
         testLaws(SemigroupKLaws.laws(
-                StateT.semigroupK<ListKWHK, Int>(ListKW.monad(), ListKW.semigroupK()),
+                StateT.semigroupK<ListKWHK, Int, Int>(ListKW.monad(), ListKW.semigroupK()),
                 StateT.applicative<ListKWHK, Int>(ListKW.monad()),
-                EQ_LIST))
-        testLaws(MonadCombineLaws.laws(StateT.monadCombine<ListKWHK, Int>(ListKW.monadCombine()),
-                { StateT.lift(ListKW.monad(), ListKW.pure(it)) },
-                { StateT.lift(ListKW.monad(), ListKW.pure({ s: Int -> s * 2 })) },
-                EQ_LIST))
+                EQ_LIST),
+            MonadCombineLaws.laws(StateT.monadCombine<ListKWHK, Int>(ListKW.monadCombine()),
+                { StateT.lift(ListKW.pure(it), ListKW.monad()) },
+                { StateT.lift(ListKW.pure({ s: Int -> s * 2 }), ListKW.monad()) },
+                EQ_LIST)
+        )
 
     }
 }
