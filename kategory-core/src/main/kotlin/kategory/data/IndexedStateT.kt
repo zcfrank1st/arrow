@@ -237,6 +237,8 @@ class IndexedStateT<F, SA, SB, A>(
                 }
             })
 
+    fun <X> imap(FF: Functor<F>, f: (SB) -> X): IndexedStateT<F, SA, X, A> = bimap(FF, f, ::identity)
+
     /**
      * Bimap the value [A] and the state [SB].
      *
@@ -261,7 +263,7 @@ class IndexedStateT<F, SA, SB, A>(
             })
 
     /**
-     * Transform the state used.
+     * Like [transform], but allows the context to change from [F] to [G].
      *
      * @param MF [Monad] for the context [F].
      * @param AG [Applicative] for the context [F].
@@ -309,6 +311,7 @@ class IndexedStateT<F, SA, SB, A>(
     }
 
     /**
+     * Get the input state, without modifying the state.
      *
      * @param FF [Functor] for the context [F].
      */
@@ -401,7 +404,7 @@ inline fun <reified F, SA, SB> IndexedStateT.Companion.set(s: SB, AF: Applicativ
  * @param AF [Applicative] for the context [F].
  * @param s value to set.
  */
-inline fun <reified F, S> IndexedStateT.Companion.setF(s: HK<F, S>, AF: Applicative<F> = applicative<F>()): IndexedStateT<F, S, S, Unit> = IndexedStateT.setF(AF, s)
+inline fun <reified F, S> IndexedStateT.Companion.setF(s: HK<F, S> , AF: Applicative<F> = applicative<F>()): IndexedStateT<F, S, S, Unit> = IndexedStateT.setF(AF, s)
 
 /**
  * Modify the state with [f] `(S) -> S` and return [Unit].
