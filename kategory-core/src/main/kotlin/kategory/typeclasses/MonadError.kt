@@ -1,5 +1,7 @@
 package kategory
 
+import kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
 import kotlin.coroutines.experimental.startCoroutine
 
 interface MonadError<F, E> : ApplicativeError<F, E>, Monad<F>, Typeclass {
@@ -16,6 +18,17 @@ inline fun <reified F, A, reified E> HK<F, A>.ensure(
         FT: MonadError<F, E> = monadError(),
         noinline error: () -> E,
         noinline predicate: (A) -> Boolean): HK<F, A> = FT.ensure(this, error, predicate)
+
+suspend inline fun <reified F, A> HK<F, A>.awaitE(MF: MonadError<F, Throwable> = monadError<F, Throwable>()): A = suspendCoroutineOrReturn { c ->
+    MF.handleErrorWith(this) { throwable ->
+        c.resumeWithException(throwable)
+        MF.raiseError(throwable)
+    }.flatMap(MF) { value ->
+        c.resume(value)
+        MF.pure(value)
+    }
+    COROUTINE_SUSPENDED
+}
 
 /**
  * Entry point for monad bindings which enables for comprehensions. The underlying impl is based on coroutines.

@@ -1,6 +1,10 @@
 package kategory
 
+import kotlin.coroutines.experimental.Continuation
+import kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
 import kotlin.coroutines.experimental.startCoroutine
+import kotlin.coroutines.experimental.suspendCoroutine
 
 interface Monad<F> : Applicative<F>, Typeclass {
 
@@ -30,6 +34,14 @@ inline fun <F, B> Monad<F>.ifM(fa: HK<F, Boolean>, crossinline ifTrue: () -> HK<
 inline fun <reified F, A, B> HK<F, A>.flatMap(FT: Monad<F> = monad(), noinline f: (A) -> HK<F, B>): HK<F, B> = FT.flatMap(this, f)
 
 inline fun <reified F, A> HK<F, HK<F, A>>.flatten(FT: Monad<F> = monad()): HK<F, A> = FT.flatten(this)
+
+suspend inline fun <reified F, A> HK<F, A>.await(MF: Monad<F> = monad<F>()): A = suspendCoroutineOrReturn { c: Continuation<A> ->
+    MF.flatMap(this) {
+        c.resume(it)
+        MF.pure(it)
+    }
+    COROUTINE_SUSPENDED
+}
 
 /**
  * Entry point for monad bindings which enables for comprehension. The underlying impl is based on coroutines.

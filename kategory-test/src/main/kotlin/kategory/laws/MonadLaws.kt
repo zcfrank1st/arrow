@@ -3,6 +3,7 @@ package kategory
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
 import kotlinx.coroutines.experimental.newSingleThreadContext
+import kotlinx.coroutines.experimental.runBlocking
 
 object MonadLaws {
 
@@ -13,6 +14,7 @@ object MonadLaws {
                     Law("Monad Laws: kleisli left identity", { kleisliLeftIdentity(M, EQ) }),
                     Law("Monad Laws: kleisli right identity", { kleisliRightIdentity(M, EQ) }),
                     Law("Monad Laws: map / flatMap coherence", { mapFlatMapCoherence(M, EQ) }),
+                    Law("Monad Laws: await", { awaitMonad(M) }),
                     Law("Monad Laws: monad comprehensions", { monadComprehensions(M, EQ) }),
                     Law("Monad Laws: monad comprehensions binding in other threads", { monadComprehensionsBindInContext(M, EQ) }),
                     Law("Monad Laws: stack-safe//unsafe monad comprehensions equivalence", { equivalentComprehensions(M, EQ) }),
@@ -43,6 +45,11 @@ object MonadLaws {
     inline fun <reified F> mapFlatMapCoherence(M: Monad<F> = monad<F>(), EQ: Eq<HK<F, Int>>): Unit =
             forAll(genFunctionAToB<Int, Int>(Gen.int()), genApplicative(Gen.int(), M), { f: (Int) -> Int, fa: HK<F, Int> ->
                 M.flatMap(fa, { M.pure(f(it)) }).equalUnderTheLaw(M.map(fa, f), EQ)
+            })
+
+    inline fun <reified F> awaitMonad(M: Monad<F> = monad<F>()): Unit =
+            forAll(Gen.int(), { number: Int ->
+                runBlocking { M.pure(number).await(M) } == number
             })
 
     inline fun <reified F> stackSafety(iterations: Int = 5000, M: Monad<F> = monad<F>(), EQ: Eq<HK<F, Int>>): Unit {
