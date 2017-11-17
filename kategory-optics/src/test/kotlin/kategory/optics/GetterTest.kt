@@ -3,12 +3,8 @@ package kategory.optics
 import io.kotlintest.KTestJUnitRunner
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
-import kategory.Tuple2
-import kategory.UnitSpec
-import kategory.left
-import kategory.right
-import kategory.toT
 import org.junit.runner.RunWith
+import kategory.*
 
 @RunWith(KTestJUnitRunner::class)
 class GetterTest : UnitSpec() {
@@ -74,6 +70,48 @@ class GetterTest : UnitSpec() {
             forAll(Gen.int(), TokenGen, { int: Int, token: Token ->
                 first.get(int toT token) == int toT token.value
             })
+        }
+
+        "Getter as reader should be same as getting value from getter" {
+            forAll(TokenGen) { token ->
+                tokenGetter.toReader().runId(token)
+                        .eqv(tokenGetter.get(token))
+            }
+        }
+
+        "ask value from getter should be same as getting value from getter" {
+            forAll(TokenGen) { token ->
+                tokenGetter.ask().runId(token)
+                        .eqv(tokenGetter.get(token))
+            }
+        }
+
+        "asks value by f from getter should be same as getting value from getter" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                tokenGetter.asks(f).runId(token)
+                        .eqv(tokenGetter.get(token).let(f))
+            }
+        }
+
+        "Getter as state should be same as getting value from getter" {
+            forAll(TokenGen) { token ->
+                tokenGetter.toState().run(token)
+                        .eqv(token toT tokenLens.get(token))
+            }
+        }
+
+        "extract state from getter should be same as getting value from getter" {
+            forAll(TokenGen) { token ->
+                tokenGetter.extract().run(token)
+                        .eqv(token toT tokenLens.get(token))
+            }
+        }
+
+        "inspecting by f state from getter should be same as modifying and getting value from getter over f" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                tokenGetter.inspect(f).run(token)
+                        .eqv(token toT tokenLens.get(token).let(f))
+            }
         }
 
     }

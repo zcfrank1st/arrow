@@ -19,14 +19,14 @@ fun <S, T, A, B> PTraversal<S, T, A, B>.extract() = toState()
  *
  * @param f the function you want to apply to the foci.
  */
-fun <S, T, A, B, C> PTraversal<S, T, A, B>.inspect(f: (ListKW<A>) -> C): State<S, C> = extract().map(f)
+fun <S, T, A, B, C> PTraversal<S, T, A, B>.inspect(f: (ListKW<A>) -> C): State<S, C> = extract().map(f, Id.monad())
 
 /**
  * Modify the foci of a [PTraversal] and returns its new values.
  *
  * @param f the function you want to apply to a focus [A].
  */
-fun <S, T, A, B> PTraversal<S, T, A, B>.mod(f: (A) -> B): IndexedState<S, T, ListKW<B>> = IndexedState { s ->
+fun <S, T, A, B> PTraversal<S, T, A, B>.mod(f: (A) -> B): IndexedState<S, T, ListKW<B>> =IndexedState { s ->
     val aas = getAll(s)
     modify(s, f) toT aas.map(f)
 }

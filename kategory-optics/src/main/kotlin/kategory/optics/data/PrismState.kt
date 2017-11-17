@@ -29,7 +29,7 @@ inline fun <S, T, A, B, C> PPrism<S, T, A, B>.inspect(crossinline f: (A) -> C): 
  */
 fun <S, T, A, B> PPrism<S, T, A, B>.mod(f: (A) -> B): IndexedState<S, T, Option<B>> = modo(f).map {
     it.map(f)
-}
+}.ev()
 
 /**
  * Modify the focus of a [POptional] and returns its old value, if there was one.

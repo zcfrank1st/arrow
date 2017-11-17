@@ -20,4 +20,4 @@ fun <S, A> Fold<S, A>.extract(): State<S, ListKW<A>> = State { s ->
  *
  * @param f the function you want to apply to the foci.
  */
-fun <S, A, B> Fold<S, A>.inspect(f: (ListKW<A>) -> B): State<S, B> = extract().map(f)
+fun <S, A, B> Fold<S, A>.inspect(f: (ListKW<A>) -> B): State<S, B> = extract().map(f, Id.monad())

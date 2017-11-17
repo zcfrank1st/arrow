@@ -115,59 +115,68 @@ class OptionalTest : UnitSpec() {
 
         "Optional as state should be same as getting value from optional" {
             forAll(Gen.list(Gen.int())) { ints ->
-                optionalHead.toState().runA(ints) == optionalHead.getOption(ints)
+                optionalHead.toState().run(ints) ==
+                        ints toT optionalHead.getOption(ints)
             }
         }
 
         "extract state from optional should be same as getting value from optional" {
             forAll(Gen.list(Gen.int())) { ints ->
-                optionalHead.extract().runA(ints) == optionalHead.getOption(ints)
+                optionalHead.extract().run(ints) ==
+                        ints toT optionalHead.getOption(ints)
             }
         }
 
         "inspecting by f state from optional should be same as modifying and getting value from optional over f" {
             forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
-                optionalHead.inspect(f).runA(ints) == (optionalHead::getOption compose optionalHead.lift(f))(ints)
+                optionalHead.inspect(f).run(ints) ==
+                        ints toT (optionalHead::getOption compose optionalHead.lift(f))(ints)
             }
         }
 
-        "mod state through a optional should modify the source and return its new value" {
+        "mod state through an optional should modify the source and return its new value" {
             forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
                 val modifiedList = optionalHead.modify(ints, f)
-                optionalHead.mod(f).run(ints) == modifiedList toT optionalHead.getOption(modifiedList)
+                optionalHead.mod(f).run(ints) ==
+                        modifiedList toT optionalHead.getOption(modifiedList)
             }
         }
 
-        "modo state through a optional should modify the source and return its old value" {
+        "modo state through an optional should modify the source and return its old value" {
             forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
                 val oldOptionalHead = optionalHead.getOption(ints)
-                optionalHead.modo(f).run(ints) == optionalHead.modify(ints, f) toT oldOptionalHead
+                optionalHead.modo(f).run(ints) ==
+                        optionalHead.modify(ints, f) toT oldOptionalHead
             }
         }
 
-        "mod_ state through a optional should modify the source and return ignore value" {
+        "mod_ state through an optional should modify the source and return ignore value" {
             forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
-                optionalHead.mod_(f).run(ints) == optionalHead.modify(ints, f) toT Unit
+                optionalHead.mod_(f).run(ints) ==
+                        optionalHead.modify(ints, f) toT Unit
             }
         }
 
         "assign should set the value to the state through a optional and return it" {
             forAll(Gen.list(Gen.int()), Gen.int()) { ints, int ->
                 val assigned = if (optionalHead.nonEmpty(ints)) int.some() else none()
-                optionalHead.assign(int).run(ints) == optionalHead.set(ints, int) toT assigned
+                optionalHead.assign(int).run(ints) ==
+                        optionalHead.set(ints, int) toT assigned
             }
         }
 
         "assigno should set the value to the state through a optional and return the old value" {
             forAll(Gen.list(Gen.int()), Gen.int()) { ints, int ->
                 val oldOptionalHead = optionalHead.getOption(ints)
-                optionalHead.assigno(int).run(ints) == optionalHead.set(ints, int) toT oldOptionalHead
+                optionalHead.assigno(int).run(ints) ==
+                        optionalHead.set(ints, int) toT oldOptionalHead
             }
         }
 
         "assign_ should set the value to the state through a optional and ignore the value" {
             forAll(Gen.list(Gen.int()), Gen.int()) { ints, int ->
-                optionalHead.assign_(int).run(ints) == optionalHead.set(ints, int) toT Unit
+                optionalHead.assign_(int).run(ints) ==
+                        optionalHead.set(ints, int) toT Unit
             }
         }
 

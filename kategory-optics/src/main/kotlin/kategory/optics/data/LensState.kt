@@ -39,7 +39,7 @@ fun <S, T, A, B> PLens<S, T, A, B>.mod(f: (A) -> B): IndexedState<S, T, B> = Ind
  *
  * @param f the function you want to apply to the focus.
  */
-fun <S, T, A, B> PLens<S, T, A, B>.modo(f: (A) -> B): IndexedState<S, T, A> = toState().imap(lift(f))
+fun <S, T, A, B> PLens<S, T, A, B>.modo(f: (A) -> B): IndexedState<S, T, A> = toState().imap(Id.monad(), lift(f))
 
 /**
  * Modify the focus of a [PLens].

@@ -9,6 +9,7 @@ import kategory.NonEmptyList
 import kategory.SequenceKW
 import kategory.TraversalLaws
 import kategory.UnitSpec
+import kategory.eq
 import kategory.genChars
 import kategory.genFunctionAToB
 import kategory.genIntSmall
@@ -60,12 +61,12 @@ class FilterWithIndexInstanceTest : UnitSpec() {
                 funcGen = genFunctionAToB(Gen.int())
         ))
 
-//        testLaws(TraversalLaws.laws(
-//                traversal = filterIndex<String, Int, Char> { true },
-//                aGen = Gen.string(),
-//                bGen = genChars(),
-//                funcGen = genFunctionAToB(genChars())
-//        ))
+        testLaws(TraversalLaws.laws(
+                traversal = filterIndex<String, Int, Char> { true },
+                aGen = Gen.string(),
+                bGen = genChars(),
+                funcGen = genFunctionAToB(genChars())
+        ))
 
     }
 

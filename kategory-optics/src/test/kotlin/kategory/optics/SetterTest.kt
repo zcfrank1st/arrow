@@ -6,11 +6,15 @@ import io.kotlintest.properties.forAll
 import kategory.Eq
 import kategory.SetterLaws
 import kategory.UnitSpec
+import kategory.eqv
 import kategory.genFunctionAToB
+import kategory.genListKW
 import kategory.genOption
 import kategory.getOrElse
 import kategory.left
 import kategory.right
+import kategory.run
+import kategory.toT
 import org.junit.runner.RunWith
 
 @RunWith(KTestJUnitRunner::class)
@@ -57,6 +61,20 @@ class SetterTest : UnitSpec() {
             forAll(TokenGen, Gen.string(), { token, value ->
                 tokenSetter.modify(token) { value } == tokenSetter.lift { value }(token)
             })
+        }
+
+        "mod_ state through a setter should modify the source" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                tokenSetter.mod_(f).run(token)
+                        .eqv(tokenSetter.modify(token, f) toT Unit)
+            }
+        }
+
+        "assign_ should set the value to the state through a setter" {
+            forAll(TokenGen, Gen.string()) { token, s ->
+                tokenSetter.assign_(s).run(token)
+                        .eqv(tokenSetter.set(token, s) toT Unit)
+            }
         }
 
     }

@@ -66,7 +66,7 @@ fun modifyUps(f: (Int) -> Int) = State<Game, Unit> { gameUps().modify(it, f) toT
 
 fun isIdle() = State<Game, Boolean> { it toT levelOp().isEmpty(it) }
 
-fun isPlaying() = isIdle().map(Boolean::not)
+fun isPlaying() = isIdle().map(Boolean::not, Id.monad())
 
 fun nonZeroUps() = gameUps().inspect { it > 0 }
 

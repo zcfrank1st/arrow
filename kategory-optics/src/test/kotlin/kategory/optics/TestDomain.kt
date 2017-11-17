@@ -8,8 +8,24 @@ import kategory.left
 import kategory.right
 
 sealed class SumType {
+    companion object {}
+
     data class A(val string: String) : SumType()
     data class B(val int: Int) : SumType()
+}
+
+@instance(SumType::class)
+interface SumTypeEqInstance : Eq<SumType> {
+    override fun eqv(a: SumType, b: SumType): Boolean = when(a) {
+        is SumType.A -> when(b) {
+            is SumType.A -> a.string == b.string
+            else -> false
+        }
+        is SumType.B -> when(b) {
+            is SumType.B -> a.int == b.int
+            else -> false
+        }
+    }
 }
 
 object AGen : Gen<SumType.A> {
