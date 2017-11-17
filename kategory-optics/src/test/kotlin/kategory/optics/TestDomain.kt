@@ -1,7 +1,9 @@
 package kategory.optics
 
 import io.kotlintest.properties.Gen
+import kategory.Eq
 import kategory.identity
+import kategory.instance
 import kategory.left
 import kategory.right
 
@@ -56,7 +58,15 @@ internal val userSetter: Setter<User, Token> = Setter { s ->
     { user -> user.copy(token = s(user.token)) }
 }
 
-internal data class Token(val value: String)
+data class Token(val value: String) {
+    companion object
+}
+
+@instance(Token::class)
+interface TokenEqInstance : Eq<Token> {
+    override fun eqv(a: Token, b: Token): Boolean = a == b
+}
+
 internal object TokenGen : Gen<Token> {
     override fun generate() = Token(Gen.string().generate())
 }

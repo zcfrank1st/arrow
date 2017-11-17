@@ -10,5 +10,9 @@ idea {
             'build/generated/source/kapt/main',
             'build/generated/source/kaptKotlin/main',
             'build/tmp/kapt/main/kotlinGenerated')
+        testSourceDirs += files(
+                'build/generated/source/kapt/test',
+                'build/generated/source/kaptKotlin/test',
+                'build/tmp/kapt/test/kotlinGenerated')
     }
 }

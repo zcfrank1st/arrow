@@ -4,7 +4,7 @@ import io.kotlintest.properties.Gen
 
 data class Law(val name: String, val test: () -> Unit)
 
-inline fun <reified A> A.equalUnderTheLaw(b: A, eq: Eq<A>): Boolean =
+inline fun <reified A> A.equalUnderTheLaw(b: A, eq: Eq<A> = eq()): Boolean =
         eq.eqv(this, b)
 
 fun <A> forFew(amount: Int, gena: Gen<A>, fn: (a: A) -> Boolean): Unit {
