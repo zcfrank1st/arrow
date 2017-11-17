@@ -10,10 +10,14 @@ import kategory.PrismLaws
 import kategory.Try
 import kategory.UnitSpec
 import kategory.applicative
+import kategory.compose
 import kategory.genEither
 import kategory.genFunctionAToB
 import kategory.genTuple
+import kategory.run
+import kategory.runA
 import kategory.some
+import kategory.toT
 import org.junit.runner.RunWith
 
 @RunWith(KTestJUnitRunner::class)
@@ -126,6 +130,63 @@ class PrismTest : UnitSpec() {
                 sumPrism.all(sum) { predicate } == (predicate || sum is SumType.B)
             })
         }
+
+        "Prism as state should be same as getting value from optional" {
+            forAll(SumGen) { sum ->
+                sumPrism.toState().runA(sum) == sumPrism.getOption(sum)
+            }
+        }
+
+        "extract state from prism should be same as getting value from prism" {
+            forAll(SumGen) { sum ->
+                sumPrism.extract().runA(sum) == sumPrism.getOption(sum)
+            }
+        }
+
+        "inspecting by f state from prism should be same as modifying and getting value from prism over f" {
+            forAll(SumGen, genFunctionAToB<String, String>(Gen.string())) { sum, f ->
+                sumPrism.inspect(f).runA(sum) == (sumPrism::getOption compose sumPrism.lift(f))(sum)
+            }
+        }
+
+//        "mod state through a optional should modify the source and return its new value" {
+//            forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
+//                val modifiedList = optionalHead.modify(ints, f)
+//                optionalHead.mod(f).run(ints) == modifiedList toT optionalHead.getOption(modifiedList)
+//            }
+//        }
+//
+//        "modo state through a optional should modify the source and return its old value" {
+//            forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
+//                val oldOptionalHead = optionalHead.getOption(ints)
+//                optionalHead.modo(f).run(ints) == optionalHead.modify(ints, f) toT oldOptionalHead
+//            }
+//        }
+//
+//        "mod_ state through a optional should modify the source and return ignore value" {
+//            forAll(Gen.list(Gen.int()), genFunctionAToB<Int, Int>(Gen.int())) { ints, f ->
+//                optionalHead.mod_(f).run(ints) == optionalHead.modify(ints, f) toT Unit
+//            }
+//        }
+//
+//        "assign should set the value to the state through a optional and return it" {
+//            forAll(Gen.list(Gen.int()), Gen.int()) { ints, int ->
+//                optionalHead.assign(int).run(ints) == optionalHead.set(ints, int) toT int
+//            }
+//        }
+//
+//        "assigno should set the value to the state through a optional and return the old value" {
+//            forAll(Gen.list(Gen.int()), Gen.int()) { ints, int ->
+//                val oldOptionalHead = optionalHead.getOption(ints)
+//                optionalHead.assigno(int).run(ints) == optionalHead.set(ints, int) toT oldOptionalHead
+//            }
+//        }
+//
+//        "assign_ should set the value to the state through a optional and ignore the value" {
+//            forAll(Gen.list(Gen.int()), Gen.int()) { ints, int ->
+//                optionalHead.assign_(int).run(ints) == optionalHead.set(ints, int) toT Unit
+//            }
+//        }
 
     }
 

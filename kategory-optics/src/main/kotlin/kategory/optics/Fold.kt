@@ -106,7 +106,7 @@ interface Fold<S, A> {
     /**
      * Get all targets of the [Fold]
      */
-    fun getAll(M: Monoid<ListKW<A>>, s: S): ListKW<A> = foldMap(M, s, { ListKW.pure(it) })
+    fun getAll(s: S): ListKW<A> = foldMap(ListKW.monoid(), s, { ListKW.pure(it) })
 
     /**
      * Join two [Fold] with the same target
@@ -215,8 +215,3 @@ inline fun <S, reified A> Fold<S, A>.fold(s: S, M: Monoid<A> = monoid()): A = fo
  * Alias for fold.
  */
 inline fun <S, reified A> Fold<S, A>.combineAll(s: S, M: Monoid<A> = monoid()): A = foldMap(M, s, ::identity)
-
-/**
- * Get all targets of the [Fold]
- */
-inline fun <S, reified A> Fold<S, A>.getAll(s: S, M: Monoid<ListKW<A>> = monoid()): ListKW<A> = foldMap(M, s, { ListKW.pure(it) })

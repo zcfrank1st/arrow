@@ -45,7 +45,7 @@ fun <A> listToOptionNel(): Iso<List<A>, Option<NonEmptyList<A>>> = pListToOption
 /**
  * [PIso] that defines the equality between a [List] and a [ListKW]
  */
-fun <A, B> pListToListKW(): PIso<List<A>, List<B>, ListKWKind<A>, ListKWKind<B>> = PIso(
+fun <A, B> pListToListKW(): PIso<List<A>, List<B>, ListKW<A>, ListKW<B>> = PIso(
         get = { it.k() },
         reverseGet = { it.ev().list }
 )
@@ -53,4 +53,4 @@ fun <A, B> pListToListKW(): PIso<List<A>, List<B>, ListKWKind<A>, ListKWKind<B>>
 /**
  * [Iso] that defines the equality between a [List] and a [ListKW]
  */
-fun <A> listToListKW(): Iso<List<A>, ListKWKind<A>> = pListToListKW()
+fun <A> listToListKW(): Iso<List<A>, ListKW<A>> = pListToListKW()

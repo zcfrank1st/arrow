@@ -3,19 +3,7 @@ package kategory.optics
 import io.kotlintest.KTestJUnitRunner
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
-import kategory.Eq
-import kategory.LensLaws
-import kategory.Option
-import kategory.Try
-import kategory.Tuple2
-import kategory.UnitSpec
-import kategory.applicative
-import kategory.functor
-import kategory.genFunctionAToB
-import kategory.left
-import kategory.right
-import kategory.some
-import kategory.toT
+import kategory.*
 import org.junit.runner.RunWith
 
 @RunWith(KTestJUnitRunner::class)
@@ -23,22 +11,22 @@ class LensTest : UnitSpec() {
 
     init {
         testLaws(
-            LensLaws.laws(
-                lens = tokenLens,
-                aGen = TokenGen,
-                bGen = Gen.string(),
-                funcGen = genFunctionAToB(Gen.string()),
-                EQA = Eq.any(),
-                EQB = Eq.any(),
-                FA = Option.applicative()),
-            LensLaws.laws(
-                lens = Lens.id(),
-                aGen = Gen.int(),
-                bGen = Gen.int(),
-                funcGen = genFunctionAToB(Gen.int()),
-                EQA = Eq.any(),
-                EQB = Eq.any(),
-                FA = Try.applicative())
+                LensLaws.laws(
+                        lens = tokenLens,
+                        aGen = TokenGen,
+                        bGen = Gen.string(),
+                        funcGen = genFunctionAToB(Gen.string()),
+                        EQA = Eq.any(),
+                        EQB = Eq.any(),
+                        FA = Option.applicative()),
+                LensLaws.laws(
+                        lens = Lens.id(),
+                        aGen = Gen.int(),
+                        bGen = Gen.int(),
+                        funcGen = genFunctionAToB(Gen.int()),
+                        EQA = Eq.any(),
+                        EQB = Eq.any(),
+                        FA = Try.applicative())
         )
 
         "Lifting a function should yield the same result as not yielding" {
@@ -95,6 +83,63 @@ class LensTest : UnitSpec() {
             forAll(Gen.int(), TokenGen, { int: Int, token: Token ->
                 first.get(int toT token) == int toT token.value
             })
+        }
+
+        "Lens as state should be same as getting value from lens" {
+            forAll(TokenGen) { token ->
+                tokenLens.toState().runA(token) == tokenLens.get(token)
+            }
+        }
+
+        "extract state from lens should be same as getting value from lens" {
+            forAll(TokenGen) { token ->
+                tokenLens.extract().runA(token) == tokenLens.get(token)
+            }
+        }
+
+        "inspecting by f state from lens should be same as modifying and getting value from lens over f" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                tokenLens.inspect(f).runA(token) == (tokenLens::get compose tokenLens.lift(f))(token)
+            }
+        }
+
+        "mod state through a lens should modify the source and return its new value" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                val modifiedToken = tokenLens.modify(token, f)
+                tokenLens.mod(f).run(token) == modifiedToken toT modifiedToken.value
+            }
+        }
+
+        "modo state through a lens should modify the source and return its old value" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                val oldValue = tokenLens.get(token)
+                tokenLens.modo(f).run(token) == tokenLens.modify(token, f) toT oldValue
+            }
+        }
+
+        "mod_ state through a lens should modify the source and return ignore value" {
+            forAll(TokenGen, genFunctionAToB<String, String>(Gen.string())) { token, f ->
+                tokenLens.mod_(f).run(token) == tokenLens.modify(token, f) toT Unit
+            }
+        }
+
+        "assign should set the value to the state through a lens and return it" {
+            forAll(TokenGen, Gen.string()) { token, string->
+                tokenLens.assign(string).run(token) == tokenLens.set(token, string) toT string
+            }
+        }
+
+        "assigno should set the value to the state through a lens and return the old value" {
+            forAll(TokenGen, Gen.string()) { token, string ->
+                val oldValue = tokenLens.get(token)
+                tokenLens.assigno(string).run(token) == tokenLens.set(token, string) toT oldValue
+            }
+        }
+
+        "assign_ should set the value to the state through a lens and ignore the value" {
+            forAll(TokenGen, Gen.string()) { token, string ->
+                tokenLens.assign_(string).run(token) == tokenLens.set(token, string) toT Unit
+            }
         }
     }
 

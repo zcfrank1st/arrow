@@ -2,7 +2,6 @@ package kategory.optics.dontfeartheoptics
 
 import kategory.*
 import kategory.optics.*
-import kategory.optics.state.*
 
 fun levelOp(): Optional<Game, Level> =
         gameLevel() compose somePrism()
@@ -34,8 +33,8 @@ fun rngOp(): Optional<Game, RNG> =
 fun matrixOp(): Optional<Game, CandyMatrix> =
         boardOp() compose boardMatrix()
 
-fun matrixITr(): Traversal<Game, Tuple2<Pos, Option<Candy>>> =
-        matrixOp() compose mapkwToList() compose listToListKW() compose Traversal.fromTraversable() compose pairToTuple()
+fun matrixITr(): Traversal<Game, Tuple2<Pos, Option<Candy>>> = TODO()
+//        matrixOp() compose mapkwToList() compose listToListKW() compose Traversal.fromTraversable() compose pairToTuple()
 
 fun candyOp(pos: Pos): Optional<Game, Option<Option<Candy>>> = TODO("Needs At typeclass")
 
@@ -67,9 +66,9 @@ fun modifyUps(f: (Int) -> Int) = State<Game, Unit> { gameUps().modify(it, f) toT
 
 fun isIdle() = State<Game, Boolean> { it toT levelOp().isEmpty(it) }
 
-fun isPlaying() = isIdle().map { it.not() }
+fun isPlaying() = isIdle().map(Boolean::not)
 
-fun nonZeroUps() = gameUps().extracts { it > 0 }
+fun nonZeroUps() = gameUps().inspect { it > 0 }
 
 fun crushLine(i: Int) = crushWith(lineITr(i))
 
@@ -78,7 +77,7 @@ fun crushColumn(j: Int) = crushWith(columnITr(j))
 fun score(crushed: Int): StateT<IdHK, Game, Unit> =
         currentScoreOp().mod_ { it + (crushed * 5) }
 
-fun crushWith(tr: Traversal<Game, Tuple2<Pos, Option<Candy>>>): StateT<IdHK, Game, Int> = StateT.monad<IdHK, Game>().binding {
+fun crushWith(tr: Traversal<Game, Tuple2<Pos, Option<Candy>>>): StateT<IdHK, Game, Int> = TODO()/*StateT.monad<IdHK, Game>().binding {
     val ps: ListKW<Tuple2<Dir, Int>> = State<Game, ListKW<Tuple2<Dir, Int>>> { game ->
         game toT tr.foldMap(game, { (pos, candy) ->
             candy.fold(
@@ -109,5 +108,5 @@ fun crushWith(tr: Traversal<Game, Tuple2<Pos, Option<Candy>>>): StateT<IdHK, Gam
     }.bind()
 
     yields(n)
-}.ev()
+}.ev()*/
 

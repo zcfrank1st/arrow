@@ -49,7 +49,7 @@ interface MapKWFilterIndexInstance<K, V> : FilterIndex<MapKWKind<K, V>, K, V> {
 
 object StringFilterIndexInstance : FilterIndex<String, Int, Char> {
     override fun filter(p: (Int) -> Boolean): Traversal<String, Char> =
-            stringToList compose listToListKW() compose filterIndex<ListKWKind<Char>, Int, Char>().filter(p)
+        stringToList compose listToListKW() compose filterIndex<ListKW<Char>, Int, Char>().filter(p)
 }
 
 object StringFilterIndexInstanceImplicits {

@@ -344,6 +344,13 @@ inline fun <S, T, A, B, reified R> PTraversal<S, T, A, B>.foldMap(s: S, crossinl
 inline fun <S, T, A, B> PTraversal<S, T, A, B>.modify(s: S, crossinline f: (A) -> B): T = modifyF(Id.applicative(), s, { b -> Id(f(b)) }).value()
 
 /**
+ * Lift polymorphically the target of a [PTraversal] with a function [f]
+ */
+inline fun <S, T, A, B> PTraversal<S, T, A, B>.lift(crossinline f: (A) -> B): (S) -> T = { s ->
+    modify(s, f)
+}
+
+/**
  * Check whether at least one element satisfies the predicate.
  *
  * If there are no elements, the result is false.

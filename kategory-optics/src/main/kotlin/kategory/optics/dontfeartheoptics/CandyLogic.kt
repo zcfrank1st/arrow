@@ -2,7 +2,6 @@ package kategory.optics.dontfeartheoptics
 
 import kategory.*
 import kategory.optics.*
-import kategory.optics.state.*
 
 object Alien2 {
 
