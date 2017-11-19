@@ -9,6 +9,8 @@ class AutoFoldFileGenerator(
         private val generatedDir: File
 ) {
 
+    private val initialTypeParam = ('A' - 1).toString()
+
     fun generate() = annotatedList.map(this::processElement)
             .map { (element, fold) ->
                 "${foldAnnotationClass.simpleName}.${element.type.simpleName.toString().toLowerCase()}.kt" to
@@ -43,16 +45,16 @@ class AutoFoldFileGenerator(
     }, separator = "\n")
 
     fun functionTypeParams(params: List<String>, returnType: String): String =
-            if (params.isEmpty()) ""
+            if (params.isEmpty()) "<$returnType>"
             else params.joinToString(prefix = "<", postfix = ", $returnType>")
 
     fun getFoldType(params: List<String>): String {
         fun check(param: String, next: List<String>): String = (param[0] + 1).let {
-            if (next.contains(it.toString())) check(next.firstOrNull() ?: "", next.drop(1))
+            if (next.contains(it.toString())) check(next.firstOrNull() ?: initialTypeParam, next.drop(1))
             else it.toString()
         }
 
-        return check(params.firstOrNull() ?: "", params.drop(1))
+        return check(params.firstOrNull() ?: initialTypeParam, params.drop(1))
     }
 
     fun fileHeader(packageName: String): String =
