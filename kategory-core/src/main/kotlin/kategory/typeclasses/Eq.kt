@@ -67,7 +67,7 @@ inline fun <reified F> eq(): Eq<F> = instance(InstanceParametrizedType(Eq::class
  * @param b the object to compare with.
  * @see [Eq.eqv]
  */
-inline fun <reified F> F.eqv(EQ: Eq<F> = eq(), b: F): Boolean = EQ.eqv(this, b)
+inline fun <reified F> F.eqv(b: F, EQ: Eq<F> = eq()): Boolean = EQ.eqv(this, b)
 
 /**
  * Syntax method for [Eq.neqv].
@@ -76,4 +76,4 @@ inline fun <reified F> F.eqv(EQ: Eq<F> = eq(), b: F): Boolean = EQ.eqv(this, b)
  * @param b the object to compare with.
  * @see [Eq.neqv]
  */
-inline fun <reified F> F.neqv(EQ: Eq<F> = eq(), b: F): Boolean = EQ.neqv(this, b)
+inline fun <reified F> F.neqv(b: F, EQ: Eq<F> = eq()): Boolean = EQ.neqv(this, b)
