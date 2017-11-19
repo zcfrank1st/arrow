@@ -138,6 +138,9 @@ fun <A> genNullable(genA: Gen<A>): Gen<A?> =
 fun <A> genNonEmptyList(genA: Gen<A>): Gen<NonEmptyList<A>> =
         Gen.create { NonEmptyList(genA.generate(), Gen.list(genA).generate()) }
 
+fun <A> genListKW(genA: Gen<A>): Gen<ListKW<A>> =
+        Gen.create { Gen.list(genA).generate().k() }
+
 fun <K, V> genMap(genK: Gen<K>, genV: Gen<V>): Gen<Map<K, V>> =
         Gen.create { Gen.list(genK).generate().map { it to genV.generate() }.toMap() }
 

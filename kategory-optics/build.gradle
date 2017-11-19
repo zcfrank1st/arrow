@@ -6,6 +6,10 @@ dependencies {
 
     compile project(':kategory-annotations')
     kapt project(':kategory-annotations-processor')
+
+    testCompile project(':kategory-annotations')
+    kaptTest project(':kategory-annotations-processor')
+    testCompileOnly project(':kategory-annotations-processor')
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
