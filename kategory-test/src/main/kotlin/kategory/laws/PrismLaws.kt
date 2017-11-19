@@ -7,7 +7,7 @@ import kategory.optics.modify
 
 object PrismLaws {
 
-    inline fun <reified A, reified B> laws(prism: Prism<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A>, EQB: Eq<B>, EQOptionB: Eq<Option<B>>): List<Law> = listOf(
+    inline fun <reified A, reified B> laws(prism: Prism<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A> = eq(), EQB: Eq<B> = eq(), EQOptionB: Eq<Option<B>> = eq()): List<Law> = listOf(
             Law("Prism law: partial round trip one way", { partialRoundTripOneWay(prism, aGen, EQA) }),
             Law("Prism law: round trip other way", { roundTripOtherWay(prism, bGen, EQB) }),
             Law("Prism law: modify identity", { modifyIdentity(prism, aGen, EQA) }),

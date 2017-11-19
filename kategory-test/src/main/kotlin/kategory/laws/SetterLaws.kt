@@ -6,7 +6,7 @@ import kategory.optics.Setter
 
 object SetterLaws {
 
-    inline fun <reified A, reified B> laws(setter: Setter<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A>) = listOf(
+    inline fun <reified A, reified B> laws(setter: Setter<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A> = eq()) = listOf(
             Law("Setter law: set is idempotent", { setIdempotent(setter, aGen, bGen, EQA) }),
             Law("Setter law: modify identity", { modifyIdentity(setter, aGen, EQA) }),
             Law("Setter law: compose modify", { composeModify(setter, aGen, EQA, funcGen) }),

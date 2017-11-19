@@ -8,7 +8,7 @@ import kategory.optics.modifyF
 
 object OptionalLaws {
 
-    inline fun <reified A, reified B> laws(optional: Optional<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A>, EQB: Eq<B>, EQOptionB: Eq<Option<B>>): List<Law> = listOf(
+    inline fun <reified A, reified B> laws(optional: Optional<A, B>, aGen: Gen<A>, bGen: Gen<B>, funcGen: Gen<(B) -> B>, EQA: Eq<A> = eq(), EQB: Eq<B> = eq(), EQOptionB: Eq<Option<B>> = eq()): List<Law> = listOf(
             Law("Optional Law: set what you get", { getOptionSet(optional, aGen, EQA) }),
             Law("Optional Law: get what you get", { getGetOption(optional, aGen, bGen, EQB) }),
             Law("Optional Law: set is idempotent", { setIdempotent(optional, aGen, bGen, EQA) }),
