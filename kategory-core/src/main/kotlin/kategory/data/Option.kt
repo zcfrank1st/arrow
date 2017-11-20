@@ -85,18 +85,18 @@ sealed class Option<out A> : OptionKind<A> {
     inline fun <B> flatMap(crossinline f: (A) -> OptionKind<B>): Option<B> = fold({ None }, { a -> f(a) }).ev()
 
     /**
-     * Returns the result of applying $f to this $option's
+     * Returns the result of applying $ifDefined to this $option's
      * value if the $option is nonempty.  Otherwise, evaluates
      * expression `ifEmpty`.
      *
-     * @note This is equivalent to `$option map f getOrElse ifEmpty`.
+     * @note This is equivalent to `$option map ifDefined getOrElse ifEmpty`.
      *
      * @param ifEmpty the expression to evaluate if empty.
-     * @param f the function to apply if nonempty.
+     * @param ifDefined the function to apply if nonempty.
      */
-    inline fun <B> fold(crossinline ifEmpty: () -> B, crossinline f: (A) -> B): B = when (this) {
+    inline fun <B> fold(crossinline ifEmpty: () -> B, crossinline ifDefined: (A) -> B): B = when (this) {
         is None -> ifEmpty()
-        is Some<A> -> f(value)
+        is Some<A> -> ifDefined(value)
     }
 
     fun <B> foldL(b: B, f: (B, A) -> B): B =
