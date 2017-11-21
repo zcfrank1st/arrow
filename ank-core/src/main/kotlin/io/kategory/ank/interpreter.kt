@@ -133,6 +133,8 @@ fun compileCodeImpl(snippets: Map<File, ListKW<Snippet>>, classpath: ListKW<Stri
     return runBlocking {
         snippets.map { (file, codeBlocks) ->
             async(IOPool) {
+                val start = System.currentTimeMillis()
+                println(":runAnk -> START...: $file")
                 val classLoader = URLClassLoader(classpath.map { URL(it) }.ev().list.toTypedArray())
                 val seManager = ScriptEngineManager(classLoader)
                 val engineCache: Map<String, ScriptEngine> =
@@ -147,8 +149,8 @@ fun compileCodeImpl(snippets: Map<File, ListKW<Snippet>>, classpath: ListKW<Stri
                         val engine: ScriptEngine = engineCache.k().getOrElse(
                                 snippet.lang,
                                 { throw CompilationException(file, snippet, IllegalStateException("No engine configured for `${snippet.lang}`")) })
-                        engine.eval(snippet.code)
-
+                        val result = engine.eval(snippet.code)
+                        result
                     }.fold({
                         throw CompilationException(file, snippet, it)
                     }, { it })
@@ -159,6 +161,8 @@ fun compileCodeImpl(snippets: Map<File, ListKW<Snippet>>, classpath: ListKW<Stri
                         snippet.copy(result = resultString)
                     }
                 }
+                val end = System.currentTimeMillis()
+                println(":runAnk -> FINISHED(${end - start} ms): $file")
                 CompiledMarkdown(file, evaledSnippets)
             }
         }.map { it.await() }.k()

@@ -140,7 +140,7 @@ Option.applicative().tupled(Option(1), Option("Hello"), Option(20.0))
 
 Computing over dependent values ignoring absence
 
-```kotlin
+```kotlin:ank
 Option.monad().binding {
    val a = Option(1).bind()
    val b = Option(1 + a).bind()
@@ -150,7 +150,7 @@ Option.monad().binding {
 //Some(value=6)
 ```
 
-```kotlin
+```kotlin:ank
 Option.monad().binding {
    val x = none<Int>().bind()
    val y = Option(1 + x).bind()
