@@ -3,13 +3,19 @@ package arrow.optics.dsl_poc
 import arrow.core.Option
 import arrow.data.ListKW
 import arrow.data.ListKWHK
+import arrow.data.MapKW
 import arrow.optics.PTraversal
 import arrow.optics.Setter
+import arrow.optics.fromTraversable
 import arrow.optics.listKWKindToListKW
 import arrow.optics.nullableOptional
 import arrow.optics.somePrism
+import arrow.optics.typeclasses.Each
+import arrow.optics.typeclasses.Index
+import arrow.optics.typeclasses.each
+import arrow.optics.typeclasses.index
 
-interface BoundSetter<S, A> {
+interface BoundSetter<out S, A> {
     fun modify(f: (A) -> A): S
 }
 
@@ -24,32 +30,26 @@ fun <T> T.setter() = object : BoundSetter<T, T> {
 fun <S, A> BoundSetter<S, A>.set(a: A) = modify { a }
 
 //primitives
-val <T, A> BoundSetter<T, A?>.nullable get() = setter(nullableOptional<A>().asSetter())
-val <T, A> BoundSetter<T, Option<A>>.some get() = setter(somePrism<A>().asSetter())
-val <T, A> BoundSetter<T, ListKW<A>>.each: BoundSetter<T, A>
-    get() = setter(listKWKindToListKW<A>().reverse() compose PTraversal.fromTraversable<ListKWHK, A, A>().asSetter())
+val <T, A> BoundSetter<T, A?>.nullable
+    inline get() = setter(nullableOptional<A>().asSetter())
 
-//Generated
-val <T> BoundSetter<T, Employee>.name
-    @JvmName("employeeName")
-    inline get() = setter(employeeName().asSetter())
-val <T> BoundSetter<T, Employee>.company
-    inline get() = setter(employeeCompany().asSetter())
-val <T> BoundSetter<T, Company>.name
-    @JvmName("companyName")
-    inline get() = setter(companyName().asSetter())
-val <T> BoundSetter<T, Company>.address
-    inline get() = setter(companyAddress().asSetter())
-val <T> BoundSetter<T, Address>.city
-    inline get() = setter(addressCity().asSetter())
-val <T> BoundSetter<T, Address>.street
-    inline get() = setter(addressStreet().asSetter())
-val <T> BoundSetter<T, Street>.number
-    inline get() = setter(streetNumber().asSetter())
-val <T> BoundSetter<T, Street>.name
-    inline get() = setter(streetName().asSetter())
-val <T> BoundSetter<T, CompanyEmployees>.employees
-    inline get() = setter(companyEmployeesEmployees().asSetter())
+val <T, A> BoundSetter<T, Option<A>>.some
+    inline get() = setter(somePrism<A>().asSetter())
+
+fun <T, A> BoundSetter<T, ListKW<A>>.each(): BoundSetter<T, A> =
+        setter(listKWKindToListKW<A>().reverse() compose PTraversal.fromTraversable<ListKWHK, A, A>().asSetter())
+
+inline fun <T, reified S, reified A> BoundSetter<T, S>.each(EA: Each<S, A> = arrow.optics.typeclasses.each()): BoundSetter<T, A> =
+        setter(EA.each().asSetter())
+
+inline fun <T, reified A> BoundSetter<T, ListKW<A>>.get(i: Int): BoundSetter<T, A> =
+        setter(index<ListKW<A>, Int, A>().index(i).asSetter())
+
+inline fun <T, reified S, reified A> BoundSetter<T, S>.get(i: Int, ID: Index<S, Int, A> = index()): BoundSetter<T, A> =
+        setter(ID.index(i).asSetter())
+
+inline fun <T, reified S, reified I, reified A> BoundSetter<T, S>.get(i: I, ID: Index<S, I, A> = index(), dummy: Unit = Unit): BoundSetter<T, A> =
+        setter(ID.index(i).asSetter())
 
 fun main(args: Array<String>) {
 
@@ -57,8 +57,16 @@ fun main(args: Array<String>) {
             .modify(String::capitalize)
             .let(::println)
 
-    employees.setter().employees.each.company.nullable.address.street.name
+    employees.setter().employees.each().company.nullable.address.street.name
             .modify(String::toUpperCase)
+            .let(::println)
+
+    employees.setter().employees.get(0).company.nullable.address.street.name
+            .modify(String::toUpperCase)
+            .let(::println)
+
+    db.setter().content.get<Db, MapKW<Keys, String>, Keys, String>(Three)
+            .modify(String::reversed)
             .let(::println)
 
 }

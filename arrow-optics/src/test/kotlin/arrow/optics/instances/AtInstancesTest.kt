@@ -5,6 +5,7 @@ import arrow.data.ListKW
 import arrow.data.MapKW
 import arrow.data.SetKW
 import arrow.optics.AndMonoid
+import arrow.optics.typeclasses.At.Companion.at
 import arrow.optics.typeclasses.at
 import arrow.test.UnitSpec
 import arrow.test.generators.genFunctionAToB

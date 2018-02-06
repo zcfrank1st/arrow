@@ -19,3 +19,4 @@ fun <A1, A2, B1, B2> pEitherToValidation(): PIso<Either<A1, B1>, Either<A2, B2>,
  * [Iso] that defines the equality between [Either] and [Validated]
  */
 fun <A, B> eitherToValidated(): Iso<Either<A, B>, Validated<A, B>> = pEitherToValidation()
+
