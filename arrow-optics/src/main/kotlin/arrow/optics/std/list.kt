@@ -2,7 +2,9 @@ package arrow.optics
 
 import arrow.core.*
 import arrow.data.ListKW
+import arrow.data.ListKWKind
 import arrow.data.NonEmptyList
+import arrow.data.ev
 import arrow.data.k
 
 /**
@@ -48,3 +50,11 @@ fun <A, B> pListToListKW(): PIso<List<A>, List<B>, ListKW<A>, ListKW<B>> = PIso(
  * [Iso] that defines the equality between a [List] and a [ListKW]
  */
 fun <A> listToListKW(): Iso<List<A>, ListKW<A>> = pListToListKW()
+
+/**
+ * [Iso] that defines equality between [ListKWKind] and [LisKW]
+ */
+fun <A> listKWKindToListKW(): Iso<ListKWKind<A>, ListKW<A>> = Iso(
+        get = { it.ev() },
+        reverseGet = ::identity
+)
