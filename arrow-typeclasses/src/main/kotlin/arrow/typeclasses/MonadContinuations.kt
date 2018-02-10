@@ -1,51 +1,49 @@
 package arrow.typeclasses
 
 import arrow.HK
-import java.util.concurrent.CountDownLatch
-import kotlin.coroutines.experimental.*
+import arrow.core.Either
+import arrow.typeclasses.internal.Platform.awaitableLatch
+import kotlin.coroutines.experimental.Continuation
+import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.RestrictsSuspension
 import kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
-
-interface BindingInContextContinuation<in T> : Continuation<T> {
-    fun await(): Throwable?
-}
+import kotlin.coroutines.experimental.startCoroutine
 
 @RestrictsSuspension
-open class MonadContinuation<F, A>(M: Monad<F>, override val context: CoroutineContext = EmptyCoroutineContext) :
-        Continuation<HK<F, A>>, Monad<F> by M {
+open class MonadContinuation<F, A>(M: Monad<F>, private val latch: Awaitable<HK<F, A>>, override val context: CoroutineContext) :
+        Continuation<HK<F, A>>, Monad<F> by M, Awaitable<HK<F, A>> by latch {
 
     override fun resume(value: HK<F, A>) {
         returnedMonad = value
     }
 
     override fun resumeWithException(exception: Throwable) {
-        throw exception
+        resolve(Either.left(exception))
     }
 
     protected fun bindingInContextContinuation(context: CoroutineContext): BindingInContextContinuation<HK<F, A>> =
             object : BindingInContextContinuation<HK<F, A>> {
-                val latch: CountDownLatch = CountDownLatch(1)
+                val latch: Awaitable<Unit> = awaitableLatch()
 
-                var error: Throwable? = null
-
-                override fun await() = latch.await().let { error }
+                override fun await() = latch.awaitBlocking().fold({ it }, { null })
 
                 override val context: CoroutineContext = context
 
                 override fun resume(value: HK<F, A>) {
                     returnedMonad = value
-                    latch.countDown()
+                    latch.resolve(Either.Right(Unit))
                 }
 
                 override fun resumeWithException(exception: Throwable) {
-                    error = exception
-                    latch.countDown()
+                    latch.resolve(Either.Left(exception))
                 }
             }
 
     protected lateinit var returnedMonad: HK<F, A>
 
-    open fun returnedMonad(): HK<F, A> = returnedMonad
+    open fun returnedMonad(): HK<F, A> =
+            awaitBlocking().fold({ throw it }, { result -> flatMap(returnedMonad, { result }) })
 
     suspend fun <B> HK<F, B>.bind(): B = bind { this }
 
@@ -82,8 +80,4 @@ open class MonadContinuation<F, A>(M: Monad<F>, override val context: CoroutineC
         })
         COROUTINE_SUSPENDED
     }
-
-    infix fun <B> yields(b: B): HK<F, B> = yields { b }
-
-    infix fun <B> yields(b: () -> B): HK<F, B> = pure(b())
 }

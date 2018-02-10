@@ -77,7 +77,7 @@ object MonadLaws {
                     val a = pure(num).bind()
                     val b = pure(a + 1).bind()
                     val c = pure(b + 1).bind()
-                    yields(c)
+                    (c)
                 }
                 val bb = M.bindingStackSafe {
                     val a = pure(num).bind()
@@ -95,7 +95,7 @@ object MonadLaws {
                     val a = pure(num).bind()
                     val b = pure(a + 1).bind()
                     val c = pure(b + 1).bind()
-                    yields(c)
+                    (c)
                 }.equalUnderTheLaw(M.pure(num + 2), EQ)
             })
 
@@ -104,7 +104,7 @@ object MonadLaws {
                 M.binding {
                     val a = bindIn(newSingleThreadContext("$num")) { num + 1 }
                     val b = bindIn(newSingleThreadContext("$a")) { a + 1 }
-                    yields(b)
+                    (b)
                 }.equalUnderTheLaw(M.pure(num + 2), EQ)
             })
 

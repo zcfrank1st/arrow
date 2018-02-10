@@ -1,9 +1,12 @@
 package arrow.ank
 
 import arrow.data.*
-import arrow.free.*
-import arrow.instances.*
-import arrow.typeclasses.*
+import arrow.free.Free
+import arrow.free.ev
+import arrow.free.map
+import arrow.typeclasses.Traverse
+import arrow.typeclasses.binding
+import arrow.typeclasses.sequence
 import org.intellij.markdown.ast.ASTNode
 import java.io.File
 
@@ -22,7 +25,7 @@ fun ank(source: File, target: File, compilerArgs: ListKW<String>) =
             val compilationResults = compileCode(allSnippets.mapIndexed { n, s -> files.list[n] to s }.toMap(), compilerArgs).bind()
             val replacedResults: ListKW<String> = compilationResults.map { c -> replaceAnkToLang(c) }.k().sequence().bind()
             val resultingFiles: ListKW<File> = generateFiles(files, replacedResults).bind()
-            yields(resultingFiles)
+            (resultingFiles)
         }
 
 fun <A> ListKW<Free<AnkOpsHK, A>>.sequence(T: Traverse<ListKWHK> = ListKW.traverse()): Free<AnkOpsHK, ListKW<A>> =

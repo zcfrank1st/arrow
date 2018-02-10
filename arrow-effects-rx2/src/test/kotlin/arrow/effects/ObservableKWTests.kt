@@ -65,7 +65,7 @@ class ObservableKWTest : UnitSpec() {
         "Multi-thread Observables finish correctly" {
             val value: Observable<Long> = ObservableKW.monadErrorFlat().bindingCatch {
                 val a = Observable.timer(2, TimeUnit.SECONDS).k().bind()
-                yields(a)
+                (a)
             }.value()
 
             val test: TestObserver<Long> = value.test()
@@ -80,7 +80,7 @@ class ObservableKWTest : UnitSpec() {
                 val a = Observable.timer(2, TimeUnit.SECONDS, Schedulers.newThread()).k().bind()
                 threadRef = Thread.currentThread()
                 val b = Observable.just(a).observeOn(Schedulers.newThread()).k().bind()
-                yields(b)
+                (b)
             }.value()
             val test: TestObserver<Long> = value.test()
             val lastThread: Thread = test.awaitDone(5, TimeUnit.SECONDS).lastThread()
@@ -94,7 +94,7 @@ class ObservableKWTest : UnitSpec() {
         "Observable cancellation forces binding to cancel without completing too" {
             val value: Observable<Long> = ObservableKW.monadErrorFlat().bindingCatch {
                 val a = Observable.timer(3, TimeUnit.SECONDS).k().bind()
-                yields(a)
+                (a)
             }.value()
             val test: TestObserver<Long> = value.doOnSubscribe { subscription -> Observable.timer(1, TimeUnit.SECONDS).subscribe { subscription.dispose() } }.test()
             test.awaitTerminalEvent(5, TimeUnit.SECONDS)

@@ -8,6 +8,9 @@ import arrow.core.toT
 import arrow.effects.data.internal.BindingCancellationException
 import arrow.typeclass
 import arrow.typeclasses.MonadError
+import arrow.typeclasses.internal.Platform.awaitableLatch
+import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.EmptyCoroutineContext
 import kotlin.coroutines.experimental.startCoroutine
 
 /** The context required to defer evaluating a safe computation. **/
@@ -46,8 +49,9 @@ inline fun <reified F, A> (() -> Either<Throwable, A>).deferUnsafe(SC: MonadSusp
  * This operation is cancellable by calling invoke on the [Disposable] return.
  * If [Disposable.invoke] is called the binding result will become a lifted [BindingCancellationException].
  */
-fun <F, B> MonadSuspend<F>.bindingCancellable(c: suspend MonadSuspendCancellableContinuation<F, *>.() -> HK<F, B>): Tuple2<HK<F, B>, Disposable> {
-    val continuation = MonadSuspendCancellableContinuation<F, B>(this)
-    c.startCoroutine(continuation, continuation)
+fun <F, B> MonadSuspend<F>.bindingCancellable(cc: CoroutineContext = EmptyCoroutineContext, c: suspend MonadSuspendCancellableContinuation<F, *>.() -> B): Tuple2<HK<F, B>, Disposable> {
+    val continuation = MonadSuspendCancellableContinuation<F, B>(this, awaitableLatch(), cc)
+    val coro: suspend () -> HK<F, B> = { pure(c(continuation)).also { continuation.resolve(Either.Right(it)) } }
+    coro.startCoroutine(continuation)
     return continuation.returnedMonad() toT continuation.disposable()
 }

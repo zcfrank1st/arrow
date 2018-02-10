@@ -4,6 +4,7 @@ import arrow.HK
 import arrow.core.Either
 import arrow.effects.data.internal.BindingCancellationException
 import arrow.effects.internal.stackLabels
+import arrow.typeclasses.Awaitable
 import arrow.typeclasses.MonadErrorContinuation
 import arrow.typeclasses.bindingCatch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -17,32 +18,34 @@ import kotlin.coroutines.experimental.startCoroutine
 typealias Disposable = () -> Unit
 
 @RestrictsSuspension
-open class MonadSuspendCancellableContinuation<F, A>(SC: MonadSuspend<F>, override val context: CoroutineContext = EmptyCoroutineContext) :
-        MonadErrorContinuation<F, A>(SC), MonadSuspend<F> by SC {
+open class MonadSuspendCancellableContinuation<F, A>(SC: MonadSuspend<F>, latch: Awaitable<HK<F, A>>, override val context: CoroutineContext = EmptyCoroutineContext) :
+        MonadErrorContinuation<F, A>(SC, latch, context), MonadSuspend<F> by SC {
 
     protected val cancelled: AtomicBoolean = AtomicBoolean(false)
 
     fun disposable(): Disposable = { cancelled.set(true) }
 
-    override fun returnedMonad(): HK<F, A> = returnedMonad
-
     suspend fun <B> bindDefer(f: () -> B): B =
             invoke(f).bind()
 
     suspend fun <B> bindDeferIn(context: CoroutineContext, f: () -> B): B =
-            suspend { bindingCatch { yields(bindIn(context, f)) } }.bind()
+            suspend { bindingCatch { bindIn(context, f) } }.bind()
 
     suspend fun <B> bindDeferUnsafe(f: () -> Either<Throwable, B>): B =
             deferUnsafe(f).bind()
 
     override suspend fun <B> bind(m: () -> HK<F, B>): B = suspendCoroutineOrReturn { c ->
+        println("Starting line")
         val labelHere = c.stackLabels // save the whole coroutine stack labels
         returnedMonad = flatMap(m(), { x: B ->
+            println("We're here")
             c.stackLabels = labelHere
             if (cancelled.get()) {
                 throw BindingCancellationException()
             }
+            println("And now resume")
             c.resume(x)
+            println("Alles gut")
             returnedMonad
         })
         COROUTINE_SUSPENDED

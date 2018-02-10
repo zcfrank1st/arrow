@@ -1,14 +1,14 @@
 package arrow.mtl
 
 import arrow.HK
+import arrow.typeclasses.Awaitable
 import arrow.typeclasses.MonadContinuation
 import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.coroutines.experimental.EmptyCoroutineContext
 import kotlin.coroutines.experimental.RestrictsSuspension
 
 @RestrictsSuspension
-open class MonadFilterContinuation<F, A>(val MF: MonadFilter<F>, override val context: CoroutineContext = EmptyCoroutineContext) :
-        MonadContinuation<F, A>(MF) {
+open class MonadFilterContinuation<F, A>(val MF: MonadFilter<F>, latch: Awaitable<HK<F, A>>, override val context: CoroutineContext) :
+        MonadContinuation<F, A>(MF, latch, context) {
 
     /**
      * marker exception that interrupts the coroutine flow and gets captured
@@ -18,7 +18,7 @@ open class MonadFilterContinuation<F, A>(val MF: MonadFilter<F>, override val co
 
     override fun resumeWithException(exception: Throwable) {
         when (exception) {
-            is PredicateInterrupted -> returnedMonad = MF.empty()
+            PredicateInterrupted -> returnedMonad = MF.empty()
             else -> super.resumeWithException(exception)
         }
     }

@@ -1,18 +1,6 @@
 package arrow.effects
 
-import arrow.HK
-import arrow.core.*
-import arrow.test.UnitSpec
-import arrow.test.concurrency.SideEffect
-import arrow.test.laws.AsyncLaws
-import arrow.typeclasses.*
-import io.kotlintest.KTestJUnitRunner
-import io.kotlintest.matchers.fail
-import io.kotlintest.matchers.shouldBe
-import io.kotlintest.matchers.shouldEqual
-import io.kotlintest.matchers.shouldNotBe
-import org.junit.runner.RunWith
-
+/*
 @RunWith(KTestJUnitRunner::class)
 class IOTest : UnitSpec() {
     fun <A> EQ(): Eq<HK<IOHK, A>> = Eq { a, b ->
@@ -247,9 +235,9 @@ class IOTest : UnitSpec() {
             val result = IO.monad().binding {
                 val x = IO.pure(1).bind()
                 val y = bind { IO { x + 1 } }
-                yields(y)
+                (y)
             }.ev()
             result.unsafeRunSync() shouldBe 2
         }
     }
-}
+}*/
